@@ -25,11 +25,12 @@ from unittest import TestCase
 from wsgi import app
 from service.common import status
 from service.models import db, Inventory
+from tests.factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
-
+BASE_URL="/inventory"
 
 ######################################################################
 #  T E S T   C A S E S
@@ -67,6 +68,19 @@ class TestYourResourceService(TestCase):
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
 
+    def _create_inventories(self, count: int = 1) -> list:
+        inventories = []
+        for _ in range(count):
+            test_inventory = InventoryFactory()
+            response = self.client.post(BASE_URL, json=test_inventory.serialize())
+            self.assertEqual(
+                response.status_code, status.HTTP_201_CREATED, "Could not create test "
+            )
+            new_inventory = response.get_json()
+            test_inventory.id = new_inventory["id"]
+            inventories.append(test_inventory)
+        return inventories
+
     def test_index(self):
         """It should call the home page"""
         response = self.client.get("/")
@@ -76,3 +90,33 @@ class TestYourResourceService(TestCase):
         self.assertEqual(data["version"], "1.0")
 
     # Todo: Add your test cases here...
+    def test_read(self):
+        response = self.client.get("/inventory/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        test_inventory = InventoryFactory()
+        logging.debug("Test Inventory: %s", test_inventory.serialize())
+        response = self.client.post(BASE_URL, json=test_inventory.serialize())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        # Make sure location header is set
+        location = response.headers.get("Location", None)
+        self.assertIsNotNone(location)
+
+        # Check the data is correct
+        new_inventory = response.get_json()
+        self.assertEqual(new_inventory["name"], test_inventory.name)
+        self.assertEqual(new_inventory["quantity"], test_inventory.quantity)
+        self.assertEqual(new_inventory["restock_level"], test_inventory.restock_level)
+        self.assertEqual(new_inventory["condition"], test_inventory.condition.name)
+
+        # Check that the location header was correct
+        response = self.client.get(location)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        new_inventory = response.get_json()
+        self.assertEqual(new_inventory["name"], test_inventory.name)
+        self.assertEqual(new_inventory["quantity"], test_inventory.quantity)
+        self.assertEqual(new_inventory["restock_level"], test_inventory.restock_level)
+        self.assertEqual(new_inventory["condition"], test_inventory.condition.name)    
+        
+

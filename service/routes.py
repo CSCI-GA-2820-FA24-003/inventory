@@ -48,3 +48,52 @@ def index():
 ######################################################################
 
 # Todo: Place your REST API code here ...
+
+def check_content_type(content_type) -> None:
+    """Checks that the media type is correct"""
+    if "Content-Type" not in request.headers:
+        app.logger.error("No Content-Type specified.")
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            f"Content-Type must be {content_type}",
+        )
+
+    if request.headers["Content-Type"] == content_type:
+        return
+
+    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {content_type}",
+    )
+
+@app.route("/inventory", methods=["POST"])
+def create_inventories():
+    app.logger.info("Request to Create inventory...")
+    check_content_type("application/json")
+
+    inventory = Inventory()
+    # Get the data from the request and deserialize it
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    inventory.deserialize(data)
+
+    # Save the new inventory to the database
+    inventory.create()
+    app.logger.info("inventory with new id [%s] saved!", inventory.id)
+
+    # Return the location of the new inventory
+    location_url = url_for("get_inventory", product_id=inventory.id, _external=True)
+    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+
+@app.route("/inventory/<int:product_id>", methods=["GET"])
+def get_inventory(product_id):
+    app.logger.info("Request to Retrieve a inventory with id [%s]", product_id)
+
+    # Attempt to find the inventory and abort if not found
+    inventory = Inventory.find(product_id)
+    if not inventory:
+        abort(status.HTTP_404_NOT_FOUND, f"Inventory item with id '{product_id}' was not found.")
+
+    app.logger.info("Returning inventory item: %s", inventory.name)
+    return jsonify(inventory.serialize()), status.HTTP_200_OK

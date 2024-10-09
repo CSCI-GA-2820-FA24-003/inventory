@@ -71,9 +71,22 @@ def create_inventory():
 
     # Return the location of the new Inventory
 
-    # Todo: uncomment the following line when get_inventories is available
-    # location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
-    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": "unknown"}
+    
+    location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
+    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+
+@app.route("/inventories/<int:inventory_id>", methods=["GET"])
+def get_inventories(inventory_id):
+    app.logger.info("Request to Retrieve a inventory with id [%s]", inventory_id)
+
+    # Attempt to find the inventory and abort if not found
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(status.HTTP_404_NOT_FOUND, f"Inventory item with id '{inventory_id}' was not found.")
+
+    app.logger.info("Returning inventory item: %s", inventory.name)
+    return jsonify(inventory.serialize()), status.HTTP_200_OK
+
 
 def check_content_type(content_type) -> None:
     """Checks that the media type is correct"""
@@ -92,3 +105,4 @@ def check_content_type(content_type) -> None:
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+

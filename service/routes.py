@@ -70,8 +70,10 @@ def create_inventory():
     app.logger.info("Inventory with new id [%s] saved!", inventory.id)
 
     # Return the location of the new Inventory
-    location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
-    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+
+    # Todo: uncomment the following line when get_inventories is available
+    # location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
+    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": "unknown"}
 
 def check_content_type(content_type) -> None:
     """Checks that the media type is correct"""

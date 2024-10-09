@@ -47,4 +47,48 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 
-# Todo: Place your REST API code here ...
+######################################################################
+# CREATE AN INVENTORY
+######################################################################
+@app.route("/inventories", methods=["POST"])
+def create_inventory():
+    """
+    Create an inventory
+    This endpoint will create an Inventory based the data in the body that is posted
+    """
+    app.logger.info("Request to Create a Inventory...")
+    check_content_type("application/json")
+
+    inventory = Inventory()
+    # Get the data from the request and deserialize it
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    inventory.deserialize(data)
+
+    # Save the new Inventory to the database
+    inventory.create()
+    app.logger.info("Inventory with new id [%s] saved!", inventory.id)
+
+    # Return the location of the new Inventory
+
+    # Todo: uncomment the following line when get_inventories is available
+    # location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
+    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": "unknown"}
+
+def check_content_type(content_type) -> None:
+    """Checks that the media type is correct"""
+    if "Content-Type" not in request.headers:
+        app.logger.error("No Content-Type specified.")
+        abort(
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            f"Content-Type must be {content_type}",
+        )
+
+    if request.headers["Content-Type"] == content_type:
+        return
+
+    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
+    abort(
+        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+        f"Content-Type must be {content_type}",
+    )

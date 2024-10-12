@@ -196,5 +196,5 @@ class Inventory(db.Model):
         """
         if not isinstance(condition, Condition):
             raise TypeError("Invalid condition, must be type Condition")
-        logger.info("Processing gender query for %s ...", condition.name)
+        logger.info("Processing condition query for %s ...", condition.name)
         return cls.query.filter(cls.condition == condition)

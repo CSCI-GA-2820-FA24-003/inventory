@@ -107,3 +107,28 @@ class TestYourResourceService(TestCase):
         # self.assertEqual(new_inventory["quantity"], test_inventory.quantity)
         # self.assertEqual(new_inventory["restock_level"], test_inventory.restock_level)
         # self.assertEqual(new_inventory["condition"], test_inventory.condition.name)
+    # TEST LIST
+    # ----------------------------------------------------------
+    def test_get_inventory_list(self):
+        """It should Get a list of inventories"""
+        self._create_inventories(5)
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 5)
+    ############################################################
+    # Utility function to bulk create inventories
+    ############################################################
+    def _create_inventories(self, count: int = 1) -> list:
+        """Factory method to create inventories in bulk"""
+        inventories = []
+        for _ in range(count):
+            test_inventory = InventoryFactory()
+            response = self.client.post(BASE_URL, json=test_inventory.serialize())
+            self.assertEqual(
+                response.status_code, status.HTTP_201_CREATED, "Could not create test inventory"
+            )
+            new_inventory = response.get_json()
+            test_inventory.id = new_inventory["id"]
+            inventories.append(test_inventory)
+        return inventories

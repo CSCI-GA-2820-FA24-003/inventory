@@ -106,3 +106,41 @@ def check_content_type(content_type) -> None:
         f"Content-Type must be {content_type}",
     )
 
+# LIST ALL PETS
+######################################################################
+@app.route("/inventories", methods=["GET"])
+def list_inventories():
+    """Returns all of the Inventories"""
+    app.logger.info("Request for inventory list")
+
+    inventories = []
+
+    # Parse any arguments from the query string
+    quantity = request.args.get("quantity")
+    name = request.args.get("name")
+    restock_level = request.args.get("restock_level")
+    condition = request.args.get("condition")
+
+    if quantity:
+        app.logger.info("Find by quantity: %s", quantity)
+        inventories = Inventory.find_by_quantity(quantity)
+    elif name:
+        app.logger.info("Find by name: %s", name)
+        inventories = Inventory.find_by_name(name)
+    elif restock_level:
+        app.logger.info("Find by restock_level: %s", restock_level)
+        # create bool from string
+        restock_level_value = restock_level.lower() in ["true", "yes", "1"]
+        inventories = Inventory.find_by_availability(restock_level_value)
+    elif condition:
+        app.logger.info("Find by condition: %s", condition)
+        # create enum from string
+        inventories = Inventory.find_by_condition(condition[condition.upper()])
+    else:
+        app.logger.info("Find all")
+        inventories = Inventory.all()
+
+    results = [inventory.serialize() for inventory in inventories]
+    app.logger.info("Returning %d inventories", len(results))
+    return jsonify(results), status.HTTP_200_OK
+

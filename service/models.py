@@ -153,3 +153,48 @@ class Inventory(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
+    
+    @classmethod
+    def find_by_quantity(cls, quantity: int) -> list:
+        """Returns all of the Inventories at a given quantity
+
+        :param quantity: the quantity of the Inventories you want to match
+        :type quantity: int
+
+        :return: a collection of Inventories of that quantity
+        :rtype: list
+
+        """
+        logger.info("Processing quantity query for %s ...", quantity)
+        return cls.query.filter(cls.quantity == quantity)
+    @classmethod
+    def find_by_restock_level(cls, restock_level:int) -> list:
+        """Returns all Inventories by their restock_level
+
+        :param restock_level: the restock_level of the Inventories you want to match
+        :type restock_level: int
+
+        :return: a collection of Inventories of that restock_level
+        :rtype: list
+
+        """
+        if not isinstance(restock_level, int):
+            raise TypeError("Invalid restock_level, must be of type int")
+        logger.info("Processing restock_level query for %s ...", restock_level)
+        return cls.query.filter(cls.restock_level == restock_level)
+
+    @classmethod
+    def find_by_condition(cls, condition: Condition = Condition.NEW) -> list:
+        """Returns all Inventories by their Condition
+
+        :param condition: values are ['NEW', 'OPEN_BOX', 'USED']
+        :type condition: enum
+
+        :return: a collection of inventories of that condition
+        :rtype: list
+
+        """
+        if not isinstance(condition, Condition):
+            raise TypeError("Invalid condition, must be type Condition")
+        logger.info("Processing condition query for %s ...", condition.name)
+        return cls.query.filter(cls.condition == condition)

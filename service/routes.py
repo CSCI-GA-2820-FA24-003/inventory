@@ -144,3 +144,35 @@ def list_inventories():
     app.logger.info("Returning %d inventories", len(results))
     return jsonify(results), status.HTTP_200_OK
 
+
+######################################################################
+# UPDATE AN EXISTING INVENTORY
+######################################################################
+@app.route("/inventories/<int:inventory_id>", methods=["PUT"])
+def update_inventories(inventory_id):
+    """
+    Update a Inventory
+
+    This endpoint will update a Inventory based the body that is posted
+    """
+    app.logger.info("Request to Update a inventory with id [%s]", inventory_id)
+    check_content_type("application/json")
+
+    # Attempt to find the Inventory and abort if not found
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
+        )
+
+    # Update the Inventory with the new data
+    data = request.get_json()
+    app.logger.info("Processing: %s", data)
+    inventory.deserialize(data)
+
+    # Save the updates to the database
+    inventory.update()
+
+    app.logger.info("Inventory with ID: %d updated.", inventory.id)
+    return jsonify(inventory.serialize()), status.HTTP_200_OK

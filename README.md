@@ -2,30 +2,27 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
-
-This is a skeleton you can use to start your projects
+[![Build Status](https://github.com/CSCI-GA-2820-FA24-003/inventory/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-FA24-003/inventory/actions)
 
 ## Overview
 
-This project template contains starter code for your class project. The `/service` folder contains your `models.py` file for your model and a `routes.py` file for your service. The `/tests` folder has test case starter code for testing the model and the service separately. All you need to do is add your functionality. You can use the [lab-flask-tdd](https://github.com/nyu-devops/lab-flask-tdd) for code examples to copy from.
+The inventory project is a microservice that helps the user to keep track of inventories in the database. Its functionalities include listing inventory information, adding inventory to the database and deleting inventory items from the database.
 
-## Automatic Setup
+## Prerequisites
 
-The best way to use this repo is to start your own repo using it as a git template. To do this just press the green **Use this template** button in GitHub and this will become the source for your repository.
+- Python 3.11
+- Poetry for Python package management
+  
+## Running the service
 
-## Manual Setup
+The project uses `honcho` which gets its commands from the `Procfile`. To start the service simply use:
 
-You can also clone this repository and then copy and paste the starter code into your project repo folder on your local computer. Be careful not to copy over your own `README.md` file so be selective in what you copy.
-
-There are 4 hidden files that you will need to copy manually if you use the Mac Finder or Windows Explorer to copy files from this folder into your repo folder.
-
-These should be copied using a bash shell as follows:
-
-```bash
-    cp .gitignore  ../<your_repo_folder>/
-    cp .flaskenv ../<your_repo_folder>/
-    cp .gitattributes ../<your_repo_folder>/
+```shell
+honcho start
 ```
+
+To get the service go: `http://localhost:8000`.
+Environment defined in `.flaskenv` file used to load configuration.
 
 ## Contents
 
@@ -38,6 +35,11 @@ The project contains the following:
 .devcontainers/     - Folder with support for VSCode Remote Containers
 dot-env-example     - copy to .env to use environment variables
 pyproject.toml      - Poetry list of Python libraries required by your code
+
+.github/                   - folder for CI
+└── ISSUE_TEMPLATE         - Templates for Zenhub items
+    ├── bug_report.md      - Template for bug reports
+    ├── user-story.md      - Template for user stories
 
 service/                   - service python package
 ├── __init__.py            - package initializer
@@ -58,6 +60,52 @@ tests/                     - test cases package
 └── test_routes.py         - test suite for service routes
 ```
 
+## Coding Rules
+
+To ensure consistency and maintainability across our codebase, all developers should adhere to the following coding rules and conventions:
+
+1. **Python Style Guide**: Follow PEP 8 guidelines for Python code style. This includes:
+   - Use 4 spaces for indentation (no tabs)
+   - Maximum line length of 79 characters
+   - For long block comments or docstrings, limit to 72 characters
+   - Two blank lines between top-level functions and classes
+   - One blank line between methods in a class
+   - Imports should usually be on separate lines
+
+2. **Naming Conventions**:
+   - Classes: Use CamelCase (e.g., `MyClass`)
+   - Functions and variables: Use snake_case (e.g., `my_function`, `my_variable`)
+   - Constants: Use uppercase with underscores (e.g., `MAX_VALUE`)
+
+3. **Comments**:
+   - Write clear, concise comments for complex logic
+   - Avoid obvious comments
+
+4. **Error Handling**: 
+   - Use try-except blocks for error handling
+   - Avoid bare except clauses
+
+5. **Imports**: 
+   - Group imports in the following order: standard library, third-party, local application
+   - Use absolute imports when possible
+
+6. **Testing**:
+   - Write unit tests for all new functionality
+   - Maintain a minimum of 90% code coverage
+
+7. **Version Control**:
+   - Write clear, descriptive commit messages
+   - Create feature branches for new work
+   - Use pull requests for code reviews
+
+8. **Code Organization**:
+   - Keep functions and methods small and focused
+   - Use meaningful names for variables and functions
+
+9. **Documentation**:
+    - Keep this README updated with any new setup steps or important information
+    - Document any non-obvious design decisions or algorithms
+   
 ## License
 
 Copyright (c) 2016, 2024 [John Rofrano](https://www.linkedin.com/in/JohnRofrano/). All rights reserved.

@@ -71,9 +71,9 @@ def create_inventory():
 
     # Return the location of the new Inventory
 
-    
     location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+
 
 @app.route("/inventories/<int:inventory_id>", methods=["GET"])
 def get_inventories(inventory_id):
@@ -105,6 +105,7 @@ def check_content_type(content_type) -> None:
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {content_type}",
     )
+
 
 # LIST ALL PETS
 ######################################################################
@@ -176,3 +177,10 @@ def update_inventories(inventory_id):
 
     app.logger.info("Inventory with ID: %d updated.", inventory.id)
     return jsonify(inventory.serialize()), status.HTTP_200_OK
+
+@app.route("/error_test", methods=["GET"])
+def error_test():
+    abort(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            f"Internal Server Error",
+        )

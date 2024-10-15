@@ -22,9 +22,10 @@ TestInventory API Service Test Suite
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch, MagicMock
 from wsgi import app
 from service.common import status
-from service.models import db, Inventory
+from service.models import db, Inventory, DataValidationError
 from .factories import InventoryFactory
 
 DATABASE_URI = os.getenv(
@@ -32,6 +33,7 @@ DATABASE_URI = os.getenv(
 )
 
 BASE_URL = "/inventories"
+
 
 ######################################################################
 #  T E S T   C A S E S
@@ -69,19 +71,6 @@ class TestYourResourceService(TestCase):
     #  P L A C E   T E S T   C A S E S   H E R E
     ######################################################################
 
-    def _create_inventories(self, count: int = 1) -> list:
-        inventories = []
-        for _ in range(count):
-            test_inventory = InventoryFactory()
-            response = self.client.post(BASE_URL, json=test_inventory.serialize())
-            self.assertEqual(
-                response.status_code, status.HTTP_201_CREATED, "Could not create test "
-            )
-            new_inventory = response.get_json()
-            test_inventory.id = new_inventory["id"]
-            inventories.append(test_inventory)
-        return inventories
-
     def test_index(self):
         """It should call the home page"""
         response = self.client.get("/")
@@ -110,7 +99,7 @@ class TestYourResourceService(TestCase):
         self.assertEqual(new_inventory["quantity"], test_inventory.quantity)
         self.assertEqual(new_inventory["restock_level"], test_inventory.restock_level)
         self.assertEqual(new_inventory["condition"], test_inventory.condition.name)
-        
+
         # Check that the location header was correct
         response = self.client.get(location)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -118,8 +107,8 @@ class TestYourResourceService(TestCase):
         self.assertEqual(new_inventory["name"], test_inventory.name)
         self.assertEqual(new_inventory["quantity"], test_inventory.quantity)
         self.assertEqual(new_inventory["restock_level"], test_inventory.restock_level)
-        self.assertEqual(new_inventory["condition"], test_inventory.condition.name)    
-        
+        self.assertEqual(new_inventory["condition"], test_inventory.condition.name)
+
     def test_get_inventory(self):
         """It should Get a single Inventory"""
         # get the id of a inventory
@@ -136,6 +125,7 @@ class TestYourResourceService(TestCase):
         data = response.get_json()
         logging.debug("Response data = %s", data)
         self.assertIn("was not found", data["message"])
+
     # TEST LIST
     # ----------------------------------------------------------
     def test_get_inventory_list(self):
@@ -168,6 +158,18 @@ class TestYourResourceService(TestCase):
         updated_inventory = response.get_json()
         self.assertEqual(updated_inventory["quantity"], temp)
 
+    def test_wrong_media(self):
+        test_inventory = InventoryFactory()
+        response = self.client.post(BASE_URL, data=test_inventory.serialize())   # send as form type
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    def test_unknown_method(self):
+        test_inventory = InventoryFactory()
+        json = test_inventory.serialize()
+        json["unknown"] = "unknown"
+        response = self.client.post(BASE_URL, json=json)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     ############################################################
     # Utility function to bulk create inventories
     ############################################################
@@ -184,3 +186,36 @@ class TestYourResourceService(TestCase):
             test_inventory.id = new_inventory["id"]
             inventories.append(test_inventory)
         return inventories
+
+
+class TestSadPaths(TestCase):
+    def setUp(self):
+        """Runs before each test"""
+        self.client = app.test_client()
+
+    def test_method_not_allowed(self):
+        """It should not allow update without a Inventory id"""
+        response = self.client.put(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_internal_error(self):
+        response = self.client.get("/error_test")
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    ######################################################################
+    #  T E S T   M O C K S
+    ######################################################################
+
+    @patch('service.routes.Inventory.find_by_name')
+    def test_bad_request(self, bad_request_mock):
+        """It should return a Bad Request error from Find By Name"""
+        bad_request_mock.side_effect = DataValidationError()
+        response = self.client.get(BASE_URL, query_string='name=fido')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch('service.routes.Inventory.find_by_name')
+    def test_mock_search_data(self, pet_find_mock):
+        """It should showing how to mock data"""
+        pet_find_mock.return_value = [MagicMock(serialize=lambda: {'name': 'fido'})]
+        response = self.client.get(BASE_URL, query_string='name=fido')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

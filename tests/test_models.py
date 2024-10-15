@@ -82,8 +82,6 @@ class TestInventoryBase(TestCase):
         self.assertEqual(data.restock_level, inventory.restock_level)
         self.assertEqual(data.condition, inventory.condition)
 
-    # Todo: Add your test cases here...
-
 
 ######################################################################
 #  Q U E R Y   T E S T   C A S E S
@@ -165,6 +163,16 @@ class TestModelQueries(TestInventoryBase):
 
 
 class TestInventoryModel(TestInventoryBase):
+    """Inventory Model CRUD Tests"""
+
+    def test_delete_a_inventory(self):
+        """It should Delete a Inventory"""
+        inventory = InventoryFactory()
+        inventory.create()
+        self.assertEqual(len(inventory.all()), 1)
+        # delete the Inventory and make sure it isn't in the database
+        inventory.delete()
+        self.assertEqual(len(inventory.all()), 0)
 
     def test_deserialize_missing_data(self):
         """It should not deserialize a Inventory with missing data"""
@@ -178,13 +186,12 @@ class TestInventoryModel(TestInventoryBase):
         inventory = Inventory()
         self.assertRaises(DataValidationError, inventory.deserialize, data)
 
-    def test_deserialize_bad_available(self):
+    def test_deserialize_bad_type(self):
         """It should not deserialize a bad available attribute"""
-        test_inventory = InventoryFactory()
-        data = test_inventory.serialize()
-        data["dsadhaskjd"] = "oihdioashdo"
+        data = None
         inventory = Inventory()
         self.assertRaises(DataValidationError, inventory.deserialize, data)
+
 
 ######################################################################
 #  T E S T   E X C E P T I O N   H A N D L E R S
@@ -212,5 +219,3 @@ class TestExceptionHandlers(TestInventoryBase):
         exception_mock.side_effect = Exception()
         inventory = InventoryFactory()
         self.assertRaises(DataValidationError, inventory.delete)
-
-

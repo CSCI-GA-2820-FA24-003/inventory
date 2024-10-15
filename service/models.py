@@ -41,15 +41,6 @@ class Inventory(db.Model):
     condition = db.Column(
         db.Enum(Condition), nullable=False, server_default=(Condition.NEW.name)
     )
-    # Database auditing fields (Come back to later)
-    """
-    created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
-    last_updated = db.Column(
-        db.DateTime, default=db.func.now(), onupdate=db.func.now(), nullable=False
-    )
-    """
-
-    # Todo: Place the rest of your schema here...
 
     def __repr__(self):
         return f"<Inventory {self.name} id=[{self.id}]>"

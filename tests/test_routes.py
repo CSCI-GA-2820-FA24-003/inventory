@@ -126,6 +126,7 @@ class TestYourResourceService(TestCase):
         logging.debug("Response data = %s", data)
         self.assertIn("was not found", data["message"])
 
+    # ----------------------------------------------------------
     # TEST LIST
     # ----------------------------------------------------------
     def test_get_inventory_list(self):
@@ -135,6 +136,40 @@ class TestYourResourceService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), 5)
+
+    # ----------------------------------------------------------
+    # TEST QUERY
+    # ----------------------------------------------------------
+    def test_query_by_name(self):
+        """It should Query Inventory by name"""
+        inventories = self._create_inventories(5)
+        test_name = inventories[0].name
+        name_count = len([inventory for inventory in inventories if inventory.name == test_name])
+        response = self.client.get(
+            BASE_URL, query_string=f"name={test_name}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), name_count)
+        # check the data just to be sure
+        for inventory in data:
+            self.assertEqual(inventory["name"], test_name)
+
+    def test_query_by_quantity(self):
+        """It should Query Inventories by Category"""
+        inventories = self._create_inventories(10)
+        test_quantity = inventories[0].quantity
+        quantity_inventories = [inventory for inventory in inventories if inventory.quantity == test_quantity]
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"quantity={test_quantity}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), len(quantity_inventories))
+        # check the data just to be sure
+        for inventory in data:
+            self.assertEqual(inventory["quantity"], test_quantity)
 
     # ----------------------------------------------------------
     # TEST UPDATE
@@ -159,11 +194,13 @@ class TestYourResourceService(TestCase):
         self.assertEqual(updated_inventory["quantity"], temp)
 
     def test_wrong_media(self):
+        """It test how the system handle wrong media type request"""
         test_inventory = InventoryFactory()
         response = self.client.post(BASE_URL, data=test_inventory.serialize())   # send as form type
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_unknown_method(self):
+        """It test how the system handle a request with unexpected method"""
         test_inventory = InventoryFactory()
         json = test_inventory.serialize()
         json["unknown"] = "unknown"
@@ -189,6 +226,8 @@ class TestYourResourceService(TestCase):
 
 
 class TestSadPaths(TestCase):
+    """Test REST Exception Handling"""
+
     def setUp(self):
         """Runs before each test"""
         self.client = app.test_client()
@@ -199,6 +238,7 @@ class TestSadPaths(TestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_internal_error(self):
+        """It test that there is something wrong on server side"""
         response = self.client.get("/error_test")
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 

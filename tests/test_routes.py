@@ -193,6 +193,12 @@ class TestYourResourceService(TestCase):
         updated_inventory = response.get_json()
         self.assertEqual(updated_inventory["quantity"], temp)
 
+    def test_update_non_existing_inventory(self):
+        """It test how the system handle a bad update request"""
+        test_inventory = InventoryFactory()
+        response = self.client.put(f"{BASE_URL}/2000", json=test_inventory.serialize())
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_wrong_media(self):
         """It test how the system handle wrong media type request"""
         test_inventory = InventoryFactory()
@@ -206,6 +212,11 @@ class TestYourResourceService(TestCase):
         json["unknown"] = "unknown"
         response = self.client.post(BASE_URL, json=json)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_no_content_type(self):
+        """It test how the system handle a request without content_type"""
+        response = self.client.post(BASE_URL, headers={})
+        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     ############################################################
     # Utility function to bulk create inventories

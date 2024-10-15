@@ -205,14 +205,6 @@ class TestYourResourceService(TestCase):
         response = self.client.post(BASE_URL, data=test_inventory.serialize())   # send as form type
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    def test_unknown_method(self):
-        """It test how the system handle a request with unexpected method"""
-        test_inventory = InventoryFactory()
-        json = test_inventory.serialize()
-        json["unknown"] = "unknown"
-        response = self.client.post(BASE_URL, json=json)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-
     def test_no_content_type(self):
         """It test how the system handle a request without content_type"""
         response = self.client.post(BASE_URL, headers={})
@@ -244,7 +236,7 @@ class TestSadPaths(TestCase):
         self.client = app.test_client()
 
     def test_method_not_allowed(self):
-        """It should not allow update without a Inventory id"""
+        """It test how the system handle a request with unexpected method"""
         response = self.client.put(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 

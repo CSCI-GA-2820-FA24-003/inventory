@@ -71,12 +71,19 @@ def create_inventory():
 
     # Return the location of the new Inventory
 
-    
     location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
     return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
 
+
+######################################################################
+# READ AN INVENTORY
+######################################################################
 @app.route("/inventories/<int:inventory_id>", methods=["GET"])
 def get_inventories(inventory_id):
+    """
+    Read an inventory
+    This endpoint will read an Inventory based on the inventory_id.
+    """
     app.logger.info("Request to Retrieve a inventory with id [%s]", inventory_id)
 
     # Attempt to find the inventory and abort if not found
@@ -106,7 +113,9 @@ def check_content_type(content_type) -> None:
         f"Content-Type must be {content_type}",
     )
 
-# LIST ALL PETS
+
+######################################################################
+# LIST ALL INVENTORIES
 ######################################################################
 @app.route("/inventories", methods=["GET"])
 def list_inventories():
@@ -123,6 +132,7 @@ def list_inventories():
 
     if quantity:
         app.logger.info("Find by quantity: %s", quantity)
+        quantity = int(quantity)
         inventories = Inventory.find_by_quantity(quantity)
     elif name:
         app.logger.info("Find by name: %s", name)
@@ -131,7 +141,7 @@ def list_inventories():
         app.logger.info("Find by restock_level: %s", restock_level)
         # create bool from string
         restock_level_value = restock_level.lower() in ["true", "yes", "1"]
-        inventories = Inventory.find_by_availability(restock_level_value)
+        inventories = Inventory.find_by_restock_level(restock_level_value)
     elif condition:
         app.logger.info("Find by condition: %s", condition)
         # create enum from string
@@ -176,3 +186,19 @@ def update_inventories(inventory_id):
 
     app.logger.info("Inventory with ID: %d updated.", inventory.id)
     return jsonify(inventory.serialize()), status.HTTP_200_OK
+
+
+######################################################################
+# TEST SERVER INTERNAL ERROR
+######################################################################
+@app.route("/error_test", methods=["GET"])
+def error_test():
+    """
+    TEST SERVER INTERNAL ERROR
+
+    This endpoint will directly return a HTTP code 500, indicating something wrong on server side.
+    """
+    abort(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Internal Server Error",
+        )

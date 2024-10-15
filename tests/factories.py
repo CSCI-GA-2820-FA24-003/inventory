@@ -19,5 +19,3 @@ class InventoryFactory(factory.Factory):
     quantity = factory.Sequence(lambda n: n)
     restock_level = factory.LazyAttribute(lambda obj: int(obj.quantity * 0.2))
     condition = factory.Iterator(Condition)
-
-    # Todo: Add your other attributes here...

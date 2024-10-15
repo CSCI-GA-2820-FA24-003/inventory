@@ -41,15 +41,6 @@ class Inventory(db.Model):
     condition = db.Column(
         db.Enum(Condition), nullable=False, server_default=(Condition.NEW.name)
     )
-    # Database auditing fields (Come back to later)
-    """
-    created_at = db.Column(db.DateTime, default=db.func.now(), nullable=False)
-    last_updated = db.Column(
-        db.DateTime, default=db.func.now(), onupdate=db.func.now(), nullable=False
-    )
-    """
-
-    # Todo: Place the rest of your schema here...
 
     def __repr__(self):
         return f"<Inventory {self.name} id=[{self.id}]>"
@@ -73,6 +64,8 @@ class Inventory(db.Model):
         Updates a Inventory to the database
         """
         logger.info("Saving %s", self.name)
+        if not self.id:
+            raise DataValidationError("Update called with empty ID field")
         try:
             db.session.commit()
         except Exception as e:
@@ -153,7 +146,7 @@ class Inventory(db.Model):
         """
         logger.info("Processing name query for %s ...", name)
         return cls.query.filter(cls.name == name)
-    
+
     @classmethod
     def find_by_quantity(cls, quantity: int) -> list:
         """Returns all of the Inventories at a given quantity
@@ -167,8 +160,9 @@ class Inventory(db.Model):
         """
         logger.info("Processing quantity query for %s ...", quantity)
         return cls.query.filter(cls.quantity == quantity)
+
     @classmethod
-    def find_by_restock_level(cls, restock_level:int) -> list:
+    def find_by_restock_level(cls, restock_level: int) -> list:
         """Returns all Inventories by their restock_level
 
         :param restock_level: the restock_level of the Inventories you want to match

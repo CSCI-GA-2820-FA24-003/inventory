@@ -144,10 +144,10 @@ class TestYourResourceService(TestCase):
         """It should Query Inventory by name"""
         inventories = self._create_inventories(5)
         test_name = inventories[0].name
-        name_count = len([inventory for inventory in inventories if inventory.name == test_name])
-        response = self.client.get(
-            BASE_URL, query_string=f"name={test_name}"
+        name_count = len(
+            [inventory for inventory in inventories if inventory.name == test_name]
         )
+        response = self.client.get(BASE_URL, query_string=f"name={test_name}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), name_count)
@@ -159,11 +159,12 @@ class TestYourResourceService(TestCase):
         """It should Query Inventories by Category"""
         inventories = self._create_inventories(10)
         test_quantity = inventories[0].quantity
-        quantity_inventories = [inventory for inventory in inventories if inventory.quantity == test_quantity]
-        response = self.client.get(
-            BASE_URL,
-            query_string=f"quantity={test_quantity}"
-        )
+        quantity_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.quantity == test_quantity
+        ]
+        response = self.client.get(BASE_URL, query_string=f"quantity={test_quantity}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
         self.assertEqual(len(data), len(quantity_inventories))
@@ -202,13 +203,38 @@ class TestYourResourceService(TestCase):
     def test_wrong_media(self):
         """It test how the system handle wrong media type request"""
         test_inventory = InventoryFactory()
-        response = self.client.post(BASE_URL, data=test_inventory.serialize())   # send as form type
+        response = self.client.post(
+            BASE_URL, data=test_inventory.serialize()
+        )  # send as form type
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
     def test_no_content_type(self):
         """It test how the system handle a request without content_type"""
         response = self.client.post(BASE_URL, headers={})
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
+
+    # ----------------------------------------------------------
+    # TEST DELETE
+    # ----------------------------------------------------------
+    def test_delete_inventory(self):
+        """It should Delete an Inventory"""
+        # Create a test inventory
+        test_inventory = self._create_inventories(1)[0]
+        response = self.client.get(f"{BASE_URL}/{test_inventory.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Delete the inventory
+        response = self.client.delete(f"{BASE_URL}/{test_inventory.id}")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Ensure it was deleted
+        response = self.client.get(f"{BASE_URL}/{test_inventory.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_non_existing_inventory(self):
+        """It should return 404 when trying to delete a non-existing Inventory"""
+        response = self.client.delete(f"{BASE_URL}/0")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     ############################################################
     # Utility function to bulk create inventories
@@ -220,7 +246,9 @@ class TestYourResourceService(TestCase):
             test_inventory = InventoryFactory()
             response = self.client.post(BASE_URL, json=test_inventory.serialize())
             self.assertEqual(
-                response.status_code, status.HTTP_201_CREATED, "Could not create test inventory"
+                response.status_code,
+                status.HTTP_201_CREATED,
+                "Could not create test inventory",
             )
             new_inventory = response.get_json()
             test_inventory.id = new_inventory["id"]
@@ -249,16 +277,16 @@ class TestSadPaths(TestCase):
     #  T E S T   M O C K S
     ######################################################################
 
-    @patch('service.routes.Inventory.find_by_name')
+    @patch("service.routes.Inventory.find_by_name")
     def test_bad_request(self, bad_request_mock):
         """It should return a Bad Request error from Find By Name"""
         bad_request_mock.side_effect = DataValidationError()
-        response = self.client.get(BASE_URL, query_string='name=fido')
+        response = self.client.get(BASE_URL, query_string="name=fido")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    @patch('service.routes.Inventory.find_by_name')
+    @patch("service.routes.Inventory.find_by_name")
     def test_mock_search_data(self, pet_find_mock):
         """It should showing how to mock data"""
-        pet_find_mock.return_value = [MagicMock(serialize=lambda: {'name': 'fido'})]
-        response = self.client.get(BASE_URL, query_string='name=fido')
+        pet_find_mock.return_value = [MagicMock(serialize=lambda: {"name": "fido"})]
+        response = self.client.get(BASE_URL, query_string="name=fido")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

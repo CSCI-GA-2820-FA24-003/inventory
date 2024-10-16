@@ -16,13 +16,7 @@ The inventory project is a microservice that helps the user to keep track of inv
   
 ## Running the service
 
-The project uses `honcho` which gets its commands from the `Procfile`. To start the service simply use:
-
-```shell
-honcho start
-```
-
-To get the service go: `http://localhost:8000`.
+To get the service go: `http://localhost:8080`.
 Environment defined in `.flaskenv` file used to load configuration.
 
 ## Contents
@@ -92,7 +86,7 @@ To ensure consistency and maintainability across our codebase, all developers sh
 
 6. **Testing**:
    - Write unit tests for all new functionality
-   - Maintain a minimum of 90% code coverage
+   - Maintain a minimum of 95% code coverage
 
 7. **Version Control**:
    - Write clear, descriptive commit messages

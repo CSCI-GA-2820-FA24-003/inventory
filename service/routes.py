@@ -47,6 +47,7 @@ def index():
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
 
+
 ######################################################################
 # CREATE AN INVENTORY
 ######################################################################
@@ -72,7 +73,11 @@ def create_inventory():
     # Return the location of the new Inventory
 
     location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
-    return jsonify(inventory.serialize()), status.HTTP_201_CREATED, {"Location": location_url}
+    return (
+        jsonify(inventory.serialize()),
+        status.HTTP_201_CREATED,
+        {"Location": location_url},
+    )
 
 
 ######################################################################
@@ -89,7 +94,10 @@ def get_inventories(inventory_id):
     # Attempt to find the inventory and abort if not found
     inventory = Inventory.find(inventory_id)
     if not inventory:
-        abort(status.HTTP_404_NOT_FOUND, f"Inventory item with id '{inventory_id}' was not found.")
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory item with id '{inventory_id}' was not found.",
+        )
 
     app.logger.info("Returning inventory item: %s", inventory.name)
     return jsonify(inventory.serialize()), status.HTTP_200_OK
@@ -189,6 +197,33 @@ def update_inventories(inventory_id):
 
 
 ######################################################################
+# DELETE AN EXISTING INVENTORY
+######################################################################
+@app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
+def delete_inventories(inventory_id):
+    """
+    Delete an inventory
+
+    This endpoint will delete an existing inventory based its inventory_id
+    """
+    app.logger.info("Request to Delete an Inventory with id [%s]", inventory_id)
+
+    # Find the inventory
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
+        )
+
+    # Delete the inventory
+    inventory.delete()
+    app.logger.info("Inventory with ID [%s] delete complete.", inventory_id)
+
+    return "", status.HTTP_204_NO_CONTENT
+
+
+######################################################################
 # TEST SERVER INTERNAL ERROR
 ######################################################################
 @app.route("/error_test", methods=["GET"])
@@ -199,6 +234,6 @@ def error_test():
     This endpoint will directly return a HTTP code 500, indicating something wrong on server side.
     """
     abort(
-            status.HTTP_500_INTERNAL_SERVER_ERROR,
-            "Internal Server Error",
-        )
+        status.HTTP_500_INTERNAL_SERVER_ERROR,
+        "Internal Server Error",
+    )

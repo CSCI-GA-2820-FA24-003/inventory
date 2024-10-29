@@ -23,7 +23,7 @@ and Delete Inventory
 
 from flask import jsonify, request, url_for, abort
 from flask import current_app as app  # Import Flask application
-from service.models import Inventory
+from service.models import Inventory, Condition
 from service.common import status  # HTTP Status Codes
 
 
@@ -169,13 +169,12 @@ def list_inventories():
         inventories = Inventory.find_by_name(name)
     elif restock_level:
         app.logger.info("Find by restock_level: %s", restock_level)
-        # create bool from string
-        restock_level_value = restock_level.lower() in ["true", "yes", "1"]
-        inventories = Inventory.find_by_restock_level(restock_level_value)
+        restock_level = int(restock_level)
+        inventories = Inventory.find_by_restock_level(restock_level)
     elif condition:
         app.logger.info("Find by condition: %s", condition)
         # create enum from string
-        inventories = Inventory.find_by_condition(condition[condition.upper()])
+        inventories = Inventory.find_by_condition(Condition[condition.upper()])
     else:
         app.logger.info("Find all")
         inventories = Inventory.all()

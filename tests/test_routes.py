@@ -194,6 +194,41 @@ class TestYourResourceService(TestCase):
         updated_inventory = response.get_json()
         self.assertEqual(updated_inventory["quantity"], temp)
 
+    # ----------------------------------------------------------
+    # TEST QUERY
+    # ----------------------------------------------------------
+    def test_query_by_restock_level(self):
+        """It should Query Inventory by Restock level"""
+        inventories = self._create_inventories(10)
+        test_restock_level = inventories[0].restock_level
+        restock_level_inventories = [inventory for inventory in inventories if inventory.restock_level == test_restock_level]
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"restock_level={test_restock_level}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), len(restock_level_inventories))
+        # check the data just to be sure
+        for inventory in data:
+            self.assertEqual(inventory["restock_level"], test_restock_level)
+
+    def test_query_by_condition(self):
+        """It should Query Inventory by Condition"""
+        inventories = self._create_inventories(10)
+        test_condition = inventories[0].condition
+        condition_inventories = [inventory for inventory in inventories if inventory.condition == test_condition]
+        response = self.client.get(
+            BASE_URL,
+            query_string=f"condition={test_condition.name}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), len(condition_inventories))
+        # check the data just to be sure
+        for inventory in data:
+            self.assertEqual(inventory["condition"], test_condition.name)
+
     def test_update_non_existing_inventory(self):
         """It test how the system handle a bad update request"""
         test_inventory = InventoryFactory()
@@ -285,8 +320,8 @@ class TestSadPaths(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch("service.routes.Inventory.find_by_name")
-    def test_mock_search_data(self, pet_find_mock):
+    def test_mock_search_data(self, inventory_find_mock):
         """It should showing how to mock data"""
-        pet_find_mock.return_value = [MagicMock(serialize=lambda: {"name": "fido"})]
+        inventory_find_mock.return_value = [MagicMock(serialize=lambda: {"name": "fido"})]
         response = self.client.get(BASE_URL, query_string="name=fido")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          python -m pip install psycopg-binary==3.2.2
           python -m pip install setuptools==75.1.0 pytest==8.3.3 rich==13.8.1 sqlalchemy==2.0.34
           python -m pip install pyflakes==3.2.0 werkzeug==3.0.4 pycodestyle==2.12.1 virtualenv==20.26.4
           python -m pip install poetry

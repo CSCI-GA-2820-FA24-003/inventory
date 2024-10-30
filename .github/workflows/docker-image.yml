@@ -1,0 +1,48 @@
+name: CI build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: python:3.11-slim
+    
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypassword
+          POSTGRES_DB: mydatabase
+        options: >-
+          --health-cmd "pg_isready -U myuser"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install dependencies
+        run: |
+          python -m pip install psycopg2-binary
+          python -m pip install poetry
+          poetry config virtualenvs.create false
+          poetry install
+      - name: Linting
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 service tests --count --select=E9,F63,F7,F82 --show-source --statistics
+          # test for complexity. The GitHub editor is 127 chars wide
+          flake8 service tests --count --max-complexity=10 --max-line-length=127 --statistics
+          # Run pylint to catch other PEP8 errors
+          pylint service tests --max-line-length=127
+      - name: Run unit tests with PyTest
+        env:
+          DATABASE_URI: postgresql+psycopg2://myuser:mypassword@postgres:5432/mydatabase
+        run: pytest --pspec --cov=service --cov-report=xml --cov-fail-under=95

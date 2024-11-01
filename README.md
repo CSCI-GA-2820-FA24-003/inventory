@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)
 [![Build Status](https://github.com/CSCI-GA-2820-FA24-003/inventory/actions/workflows/ci.yml/badge.svg)](https://github.com/CSCI-GA-2820-FA24-003/inventory/actions)
 ![image](https://media.istockphoto.com/id/589106848/vector/isometric-warehouse-manager-or-worker-with-bar-code-scanner-checking.jpg?s=612x612&w=0&k=20&c=rOiV2anxSL2mqDjN1ubXEe-u0DG916v4QPdLT_FfgrU=)
-
+[![codecov](https://codecov.io/github/CSCI-GA-2820-FA24-003/inventory/graph/badge.svg?token=OYYDZUE3PA)](https://codecov.io/github/CSCI-GA-2820-FA24-003/inventory)
 ## Overview
 
 The inventory project is a microservice that helps the user to keep track of inventories in the database. Its functionalities include listing inventory information, adding inventory to the database and deleting inventory items from the database.

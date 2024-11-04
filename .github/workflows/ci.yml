@@ -46,3 +46,8 @@ jobs:
         env:
           DATABASE_URI: postgresql+psycopg2://myuser:mypassword@postgres:5432/mydatabase
         run: pytest --pspec --cov=service --cov-report=xml --cov-fail-under=95
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3.1.4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} 

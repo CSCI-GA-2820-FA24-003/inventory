@@ -53,13 +53,17 @@ def index():
                 },
                 "update_inventories": {
                     "method": "PUT",
-                    "url": url_for("update_inventories", inventory_id=0, _external=True),
+                    "url": url_for(
+                        "update_inventories", inventory_id=0, _external=True
+                    ),
                 },
                 "delete_inventories": {
                     "method": "DELETE",
-                    "url": url_for("delete_inventories", inventory_id=0, _external=True),
+                    "url": url_for(
+                        "delete_inventories", inventory_id=0, _external=True
+                    ),
                 },
-            }
+            },
         ),
         status.HTTP_200_OK,
     )
@@ -68,6 +72,17 @@ def index():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
+
+
+######################################################################
+# HEALTH CHECK
+######################################################################
+@app.route("/health", methods=["GET"])
+def health_check():
+    """
+    Health check endpoint so that Kubernetes knows that the microservice is working.
+    """
+    return jsonify(status="OK"), status.HTTP_200_OK
 
 
 ######################################################################

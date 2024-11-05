@@ -231,16 +231,14 @@ def delete_inventories(inventory_id):
 
     # Find the inventory
     inventory = Inventory.find(inventory_id)
-    if not inventory:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory with id '{inventory_id}' was not found.",
+    # If inventory exists, delete it
+    if inventory:
+        inventory.delete()
+        app.logger.info(
+            "Inventory with id [%s] as been successfully deleted.", inventory_id
         )
-
-    # Delete the inventory
-    inventory.delete()
-    app.logger.info("Inventory with ID [%s] delete complete.", inventory_id)
-
+    else:
+        app.logger.info("Inventory with id [%s] not found", inventory_id)
     return "", status.HTTP_204_NO_CONTENT
 
 

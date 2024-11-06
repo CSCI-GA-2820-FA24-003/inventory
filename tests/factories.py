@@ -3,6 +3,7 @@ Test Factory to make fake objects for testing
 """
 
 import factory
+import factory.fuzzy
 from service.models import Inventory, Condition
 
 
@@ -19,3 +20,4 @@ class InventoryFactory(factory.Factory):
     quantity = factory.Sequence(lambda n: n)
     restock_level = factory.LazyAttribute(lambda obj: int(obj.quantity * 0.2))
     condition = factory.Iterator(Condition)
+    restocking_available = factory.fuzzy.FuzzyChoice(choices=[True, False])

@@ -243,6 +243,36 @@ def delete_inventories(inventory_id):
 
 
 ######################################################################
+# Start to restock an inventory
+######################################################################
+@app.route("/inventories/<int:inventory_id>/start_restock", methods=["PUT"])
+def restock_inventories(inventory_id):
+    """Restocking an inventory makes it unavailable"""
+    app.logger.info("Request to restock an inventory with id: %d", inventory_id)
+
+    # Attempt to find the Inventory and abort if not found
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(status.HTTP_404_NOT_FOUND, f"Inventory with id '{inventory_id}' was not found.")
+
+    # you can only restock inventory that are available
+    if not inventory.restocking_available:
+        abort(
+            status.HTTP_409_CONFLICT,
+            f"Inventory with id '{inventory_id}' is not available.",
+        )
+
+    # At this point you would execute code to restock the inventory
+    # For the moment, we will just set them to unavailable
+
+    inventory.restocking_available = False
+    inventory.update()
+
+    app.logger.info("Inventory with ID: %d has been started restocking.", inventory_id)
+    return inventory.serialize(), status.HTTP_200_OK
+
+
+######################################################################
 # TEST SERVER INTERNAL ERROR
 ######################################################################
 @app.route("/error_test", methods=["GET"])

@@ -28,6 +28,15 @@ from service.common import status  # HTTP Status Codes
 
 
 ######################################################################
+# HEALTH CHECK
+######################################################################
+@app.route("/health")
+def health_check():
+    """Let them know our heart is still beating"""
+    return jsonify(status=200, message="Healthy"), status.HTTP_200_OK
+
+
+######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
@@ -53,13 +62,17 @@ def index():
                 },
                 "update_inventories": {
                     "method": "PUT",
-                    "url": url_for("update_inventories", inventory_id=0, _external=True),
+                    "url": url_for(
+                        "update_inventories", inventory_id=0, _external=True
+                    ),
                 },
                 "delete_inventories": {
                     "method": "DELETE",
-                    "url": url_for("delete_inventories", inventory_id=0, _external=True),
+                    "url": url_for(
+                        "delete_inventories", inventory_id=0, _external=True
+                    ),
                 },
-            }
+            },
         ),
         status.HTTP_200_OK,
     )

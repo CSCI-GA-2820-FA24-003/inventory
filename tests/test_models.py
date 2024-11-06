@@ -112,7 +112,13 @@ class TestModelQueries(TestInventoryBase):
         for inventory in inventories:
             inventory.create()
         restock_level = inventories[0].restock_level
-        count = len([inventory for inventory in inventories if inventory.restock_level == restock_level])
+        count = len(
+            [
+                inventory
+                for inventory in inventories
+                if inventory.restock_level == restock_level
+            ]
+        )
         found = Inventory.find_by_restock_level(restock_level)
         self.assertEqual(found.count(), count)
         for inventory in found:
@@ -136,7 +142,9 @@ class TestModelQueries(TestInventoryBase):
         for inventory in inventories:
             inventory.create()
         quantity = inventories[0].quantity
-        count = len([inventory for inventory in inventories if inventory.quantity == quantity])
+        count = len(
+            [inventory for inventory in inventories if inventory.quantity == quantity]
+        )
         found = Inventory.find_by_quantity(quantity)
         self.assertEqual(found.count(), count)
         for inventory in found:
@@ -148,7 +156,9 @@ class TestModelQueries(TestInventoryBase):
         for inventory in inventories:
             inventory.create()
         condition = inventories[0].condition
-        count = len([inventory for inventory in inventories if inventory.condition == condition])
+        count = len(
+            [inventory for inventory in inventories if inventory.condition == condition]
+        )
         found = Inventory.find_by_condition(condition)
         self.assertEqual(found.count(), count)
         for inventory in found:

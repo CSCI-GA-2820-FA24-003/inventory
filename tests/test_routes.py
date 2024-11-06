@@ -79,6 +79,14 @@ class TestYourResourceService(TestCase):
         self.assertEqual(data["name"], "Inventory REST API Service")
         self.assertEqual(data["version"], "1.0")
 
+    def test_health(self):
+        """It should be healthy"""
+        response = self.client.get("/health")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(data["status"], 200)
+        self.assertEqual(data["message"], "Healthy")
+
     # ----------------------------------------------------------
     # TEST CREATE
     # ----------------------------------------------------------
@@ -201,10 +209,13 @@ class TestYourResourceService(TestCase):
         """It should Query Inventory by Restock level"""
         inventories = self._create_inventories(10)
         test_restock_level = inventories[0].restock_level
-        restock_level_inventories = [inventory for inventory in inventories if inventory.restock_level == test_restock_level]
+        restock_level_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restock_level == test_restock_level
+        ]
         response = self.client.get(
-            BASE_URL,
-            query_string=f"restock_level={test_restock_level}"
+            BASE_URL, query_string=f"restock_level={test_restock_level}"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
@@ -217,10 +228,13 @@ class TestYourResourceService(TestCase):
         """It should Query Inventory by Condition"""
         inventories = self._create_inventories(10)
         test_condition = inventories[0].condition
-        condition_inventories = [inventory for inventory in inventories if inventory.condition == test_condition]
+        condition_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.condition == test_condition
+        ]
         response = self.client.get(
-            BASE_URL,
-            query_string=f"condition={test_condition.name}"
+            BASE_URL, query_string=f"condition={test_condition.name}"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.get_json()
@@ -322,6 +336,8 @@ class TestSadPaths(TestCase):
     @patch("service.routes.Inventory.find_by_name")
     def test_mock_search_data(self, inventory_find_mock):
         """It should showing how to mock data"""
-        inventory_find_mock.return_value = [MagicMock(serialize=lambda: {"name": "fido"})]
+        inventory_find_mock.return_value = [
+            MagicMock(serialize=lambda: {"name": "fido"})
+        ]
         response = self.client.get(BASE_URL, query_string="name=fido")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

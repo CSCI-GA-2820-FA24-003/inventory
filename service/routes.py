@@ -28,6 +28,15 @@ from service.common import status  # HTTP Status Codes
 
 
 ######################################################################
+# HEALTH CHECK
+######################################################################
+@app.route("/health")
+def health_check():
+    """Let them know our heart is still beating"""
+    return jsonify(status=200, message="Healthy"), status.HTTP_200_OK
+
+
+######################################################################
 # GET INDEX
 ######################################################################
 @app.route("/")
@@ -72,17 +81,6 @@ def index():
 ######################################################################
 #  R E S T   A P I   E N D P O I N T S
 ######################################################################
-
-
-######################################################################
-# HEALTH CHECK
-######################################################################
-@app.route("/health", methods=["GET"])
-def health_check():
-    """
-    Health check endpoint so that Kubernetes knows that the microservice is working.
-    """
-    return jsonify(status="OK"), status.HTTP_200_OK
 
 
 ######################################################################

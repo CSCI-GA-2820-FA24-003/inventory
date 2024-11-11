@@ -42,40 +42,49 @@ def health_check():
 @app.route("/")
 def index():
     """Root URL response"""
-    app.logger.info("Request for Root URL")
-    return (
-        jsonify(
-            name="Inventory REST API Service",
-            version="1.0",
-            paths={
-                "create_inventory": {
-                    "method": "POST",
-                    "url": url_for("create_inventory", _external=True),
-                },
-                "get_inventories": {
-                    "method": "GET",
-                    "url": url_for("get_inventories", inventory_id=0, _external=True),
-                },
-                "list_inventories": {
-                    "method": "GET",
-                    "url": url_for("list_inventories", _external=True),
-                },
-                "update_inventories": {
-                    "method": "PUT",
-                    "url": url_for(
-                        "update_inventories", inventory_id=0, _external=True
-                    ),
-                },
-                "delete_inventories": {
-                    "method": "DELETE",
-                    "url": url_for(
-                        "delete_inventories", inventory_id=0, _external=True
-                    ),
-                },
-            },
-        ),
-        status.HTTP_200_OK,
-    )
+    return app.send_static_file("index.html")
+
+
+######################################################################
+# GET INDEX
+######################################################################
+# @app.route("/")
+# def index():
+#     """Root URL response"""
+#     app.logger.info("Request for Root URL")
+#     return (
+#         jsonify(
+#             name="Inventory REST API Service",
+#             version="1.0",
+#             paths={
+#                 "create_inventory": {
+#                     "method": "POST",
+#                     "url": url_for("create_inventory", _external=True),
+#                 },
+#                 "get_inventories": {
+#                     "method": "GET",
+#                     "url": url_for("get_inventories", inventory_id=0, _external=True),
+#                 },
+#                 "list_inventories": {
+#                     "method": "GET",
+#                     "url": url_for("list_inventories", _external=True),
+#                 },
+#                 "update_inventories": {
+#                     "method": "PUT",
+#                     "url": url_for(
+#                         "update_inventories", inventory_id=0, _external=True
+#                     ),
+#                 },
+#                 "delete_inventories": {
+#                     "method": "DELETE",
+#                     "url": url_for(
+#                         "delete_inventories", inventory_id=0, _external=True
+#                     ),
+#                 },
+#             },
+#         ),
+#         status.HTTP_200_OK,
+#     )
 
 
 ######################################################################
@@ -266,7 +275,10 @@ def restock_inventories(inventory_id):
     # Attempt to find the Inventory and abort if not found
     inventory = Inventory.find(inventory_id)
     if not inventory:
-        abort(status.HTTP_404_NOT_FOUND, f"Inventory with id '{inventory_id}' was not found.")
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
+        )
 
     # you can only restock inventory that are available
     if not inventory.restocking_available:

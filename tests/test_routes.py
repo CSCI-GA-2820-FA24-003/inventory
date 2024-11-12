@@ -75,9 +75,7 @@ class TestYourResourceService(TestCase):
         """It should call the home page"""
         response = self.client.get("/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.get_json()
-        self.assertEqual(data["name"], "Inventory REST API Service")
-        self.assertEqual(data["version"], "1.0")
+        self.assertIn(b"Inventory REST API Service", response.data)
 
     def test_health(self):
         """It should be healthy"""
@@ -291,7 +289,11 @@ class TestYourResourceService(TestCase):
     def test_start_restock_an_inventory(self):
         """It should start restock for an inventory"""
         inventories = self._create_inventories(10)
-        available_inventories = [inventory for inventory in inventories if inventory.restocking_available is True]
+        available_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restocking_available is True
+        ]
         inventory = available_inventories[0]
         response = self.client.put(f"{BASE_URL}/{inventory.id}/start_restock")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -304,7 +306,11 @@ class TestYourResourceService(TestCase):
     def test_start_restock_not_available(self):
         """It should not start restock a Inventory that is not available"""
         inventories = self._create_inventories(10)
-        unavailable_inventories = [inventory for inventory in inventories if inventory.restocking_available is False]
+        unavailable_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restocking_available is False
+        ]
         inventory = unavailable_inventories[0]
         response = self.client.put(f"{BASE_URL}/{inventory.id}/start_restock")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)

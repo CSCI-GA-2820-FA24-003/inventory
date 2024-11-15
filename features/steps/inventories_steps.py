@@ -43,18 +43,18 @@ def step_impl(context):
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
     expect(context.resp.status_code).equal_to(HTTP_200_OK)
     # and delete them one by one
-    for pet in context.resp.json():
-        context.resp = requests.delete(f"{rest_endpoint}/{pet['id']}", timeout=WAIT_TIMEOUT)
+    for inventory in context.resp.json():
+        context.resp = requests.delete(f"{rest_endpoint}/{inventory['id']}", timeout=WAIT_TIMEOUT)
         expect(context.resp.status_code).equal_to(HTTP_204_NO_CONTENT)
 
     # load the database with new inventories
     for row in context.table:
         payload = {
             "name": row['name'],
-            "category": row['category'],
-            "available": row['available'] in ['True', 'true', '1'],
-            "gender": row['gender'],
-            "birthday": row['birthday']
+            "quantity": row['quantity'],
+            "restock_level": row['restock_level'],
+            "condition": row['condition'],
+            "restocking_available": row['restocking_available'],
         }
         context.resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
         expect(context.resp.status_code).equal_to(HTTP_201_CREATED)

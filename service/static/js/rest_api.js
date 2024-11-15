@@ -247,19 +247,19 @@ $(function () {
             $("#search_results").empty();
             let table = '<table class="table table-striped" cellpadding="10">'
             table += '<thead><tr>'
-            table += '<th class="col-md-2">ID</th>'
-            table += '<th class="col-md-2">Name</th>'
-            table += '<th class="col-md-2">Category</th>'
-            table += '<th class="col-md-2">Available</th>'
-            table += '<th class="col-md-2">Gender</th>'
-            table += '<th class="col-md-2">Birthday</th>'
+            table += '<th class="col-md-1">ID</th>'
+            table += '<th class="col-md-4">Name</th>'
+            table += '<th class="col-md-4">Quantity</th>'
+            table += '<th class="col-md-3">Restock Level</th>'
+            table += '<th class="col-md-3">Condition</th>'
+            table += '<th class="col-md-3">Restocking Available</th>'
             table += '</tr></thead><tbody>'
             let firstInventory = "";
             for(let i = 0; i < res.length; i++) {
-                let pet = res[i];
-                table +=  `<tr id="row_${i}"><td>${pet.id}</td><td>${pet.name}</td><td>${pet.category}</td><td>${pet.available}</td><td>${pet.gender}</td><td>${pet.birthday}</td></tr>`;
+                let inventory = res[i];
+                table +=  `<tr id="row_${i}"><td>${inventory.id}</td><td>${inventory.name}</td><td>${inventory.category}</td><td>${inventory.available}</td><td>${inventory.gender}</td><td>${inventory.birthday}</td></tr>`;
                 if (i == 0) {
-                    firstInventory = pet;
+                    firstInventory = inventory;
                 }
             }
             table += '</tbody></table>';

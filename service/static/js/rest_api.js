@@ -6,25 +6,31 @@ $(function () {
 
     // Updates the form with data from the response
     function update_form_data(res) {
-        $("#pet_id").val(res.id);
-        $("#pet_name").val(res.name);
-        $("#pet_category").val(res.category);
-        if (res.available == true) {
-            $("#pet_available").val("true");
-        } else {
-            $("#pet_available").val("false");
+        $("#inventory_id").val(res.id);
+        $("#inventory_name").val(res.name);
+        $("#inventory_quantity").val(res.quantity);
+        $("#inventory_restock_level").val(res.restock_level);
+        if (res.condition == "NEW") {
+            $("#inventory_condition").val("NEW");
+        } else if(res.condition == "OPEN_BOX") {
+            $("#inventory_condition").val("OPEN_BOX");
+        } else if(res.condition == "USED") {
+            $("#inventory_condition").val("OPEN_BOX");
         }
-        $("#pet_gender").val(res.gender);
-        $("#pet_birthday").val(res.birthday);
+        if (res.restocking_available == true) {
+            $("#inventory_restocking_available").val("true");
+        } else {
+            $("#inventory_restocking_available").val("false");
+        }
     }
 
     /// Clears all form fields
     function clear_form_data() {
-        $("#pet_name").val("");
-        $("#pet_category").val("");
-        $("#pet_available").val("");
-        $("#pet_gender").val("");
-        $("#pet_birthday").val("");
+        $("#inventory_name").val("");
+        $("#inventory_quantity").val("");
+        $("#inventory_restock_level").val("");
+        $("#inventory_condition").val("");
+        $("#inventory_restocking_available").val("");
     }
 
     // Updates the flash message area
@@ -34,30 +40,30 @@ $(function () {
     }
 
     // ****************************************
-    // Create a Pet
+    // Create a Inventory
     // ****************************************
 
     $("#create-btn").click(function () {
 
-        let name = $("#pet_name").val();
-        let category = $("#pet_category").val();
-        let available = $("#pet_available").val() == "true";
-        let gender = $("#pet_gender").val();
-        let birthday = $("#pet_birthday").val();
+        let name = $("#inventory_name").val();
+        let quantity = $("#inventory_quantity").val();
+        let restock_level = $("#inventory_restock_level").val();
+        let condition = $("#inventory_condition").val();
+        let restocking_available = $("#inventory_restocking_available").val() == "true";
 
         let data = {
             "name": name,
-            "category": category,
-            "available": available,
-            "gender": gender,
-            "birthday": birthday
+            "quantity": quantity,
+            "restock_level": restock_level,
+            "condition": condition,
+            "restocking_available": restocking_available
         };
 
         $("#flash_message").empty();
         
         let ajax = $.ajax({
             type: "POST",
-            url: "/pets",
+            url: "/inventories",
             contentType: "application/json",
             data: JSON.stringify(data),
         });
@@ -74,31 +80,31 @@ $(function () {
 
 
     // ****************************************
-    // Update a Pet
+    // Update a Inventory
     // ****************************************
 
     $("#update-btn").click(function () {
 
-        let pet_id = $("#pet_id").val();
-        let name = $("#pet_name").val();
-        let category = $("#pet_category").val();
-        let available = $("#pet_available").val() == "true";
-        let gender = $("#pet_gender").val();
-        let birthday = $("#pet_birthday").val();
+        let inventory_id = $("#inventory_id").val();
+        let name = $("#inventory_name").val();
+        let quantity = $("#inventory_quantity").val();
+        let restock_level = $("#inventory_restock_level").val();
+        let condition = $("#inventory_condition").val();
+        let restocking_available = $("#inventory_restocking_available").val() == "true";
 
         let data = {
             "name": name,
-            "category": category,
-            "available": available,
-            "gender": gender,
-            "birthday": birthday
+            "quantity": quantity,
+            "restock_level": restock_level,
+            "condition": condition,
+            "restocking_available": restocking_available
         };
 
         $("#flash_message").empty();
 
         let ajax = $.ajax({
                 type: "PUT",
-                url: `/pets/${pet_id}`,
+                url: `/inventories/${inventory_id}`,
                 contentType: "application/json",
                 data: JSON.stringify(data)
             })
@@ -115,18 +121,18 @@ $(function () {
     });
 
     // ****************************************
-    // Retrieve a Pet
+    // Retrieve a Inventory
     // ****************************************
 
     $("#retrieve-btn").click(function () {
 
-        let pet_id = $("#pet_id").val();
+        let inventory_id = $("#inventory_id").val();
 
         $("#flash_message").empty();
 
         let ajax = $.ajax({
             type: "GET",
-            url: `/pets/${pet_id}`,
+            url: `/inventories/${inventory_id}`,
             contentType: "application/json",
             data: ''
         })
@@ -145,25 +151,25 @@ $(function () {
     });
 
     // ****************************************
-    // Delete a Pet
+    // Delete a Inventory
     // ****************************************
 
     $("#delete-btn").click(function () {
 
-        let pet_id = $("#pet_id").val();
+        let inventory_id = $("#inventory_id").val();
 
         $("#flash_message").empty();
 
         let ajax = $.ajax({
             type: "DELETE",
-            url: `/pets/${pet_id}`,
+            url: `/inventories/${inventory_id}`,
             contentType: "application/json",
             data: '',
         })
 
         ajax.done(function(res){
             clear_form_data()
-            flash_message("Pet has been Deleted!")
+            flash_message("Inventory has been Deleted!")
         });
 
         ajax.fail(function(res){
@@ -176,13 +182,13 @@ $(function () {
     // ****************************************
 
     $("#clear-btn").click(function () {
-        $("#pet_id").val("");
+        $("#inventory_id").val("");
         $("#flash_message").empty();
         clear_form_data()
     });
 
     // ****************************************
-    // Search for a Pet
+    // Search for a Inventory
     // ****************************************
 
     $("#search-btn").click(function () {
@@ -232,20 +238,20 @@ $(function () {
             table += '<th class="col-md-2">Gender</th>'
             table += '<th class="col-md-2">Birthday</th>'
             table += '</tr></thead><tbody>'
-            let firstPet = "";
+            let firstInventory = "";
             for(let i = 0; i < res.length; i++) {
                 let pet = res[i];
                 table +=  `<tr id="row_${i}"><td>${pet.id}</td><td>${pet.name}</td><td>${pet.category}</td><td>${pet.available}</td><td>${pet.gender}</td><td>${pet.birthday}</td></tr>`;
                 if (i == 0) {
-                    firstPet = pet;
+                    firstInventory = pet;
                 }
             }
             table += '</tbody></table>';
             $("#search_results").append(table);
 
             // copy the first result to the form
-            if (firstPet != "") {
-                update_form_data(firstPet)
+            if (firstInventory != "") {
+                update_form_data(firstInventory)
             }
 
             flash_message("Success")

@@ -181,6 +181,7 @@ def list_inventories():
     name = request.args.get("name")
     restock_level = request.args.get("restock_level")
     condition = request.args.get("condition")
+    restocking_available = request.args.get("restocking_available")
 
     if quantity:
         app.logger.info("Find by quantity: %s", quantity)
@@ -197,6 +198,10 @@ def list_inventories():
         app.logger.info("Find by condition: %s", condition)
         # create enum from string
         inventories = Inventory.find_by_condition(Condition[condition.upper()])
+    elif restocking_available:
+        app.logger.info("Find by restocking_available: %s", restocking_available)
+        restocking_available = restocking_available.lower() in ["true", "yes", "1"]
+        inventories = Inventory.find_by_restocking_available(restocking_available)
     else:
         app.logger.info("Find all")
         inventories = Inventory.all()

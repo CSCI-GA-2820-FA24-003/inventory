@@ -193,27 +193,43 @@ $(function () {
 
     $("#search-btn").click(function () {
 
-        let name = $("#pet_name").val();
-        let category = $("#pet_category").val();
-        let available = $("#pet_available").val() == "true";
+        let name = $("#inventory_name").val();
+        let quantity = $("#inventory_quantity").val();
+        let restock_level = $("#inventory_restock_level").val();
+        let condition = $("#inventory_condition").val();
+        let restocking_available = $("#inventory_restocking_available").val() == "true";
 
         let queryString = ""
 
         if (name) {
             queryString += 'name=' + name
         }
-        if (category) {
+        if (quantity) {
             if (queryString.length > 0) {
-                queryString += '&category=' + category
+                queryString += '&quantity=' + quantity
             } else {
-                queryString += 'category=' + category
+                queryString += 'quantity=' + quantity
             }
         }
-        if (available) {
+        if (restock_level) {
             if (queryString.length > 0) {
-                queryString += '&available=' + available
+                queryString += '&restock_level=' + restock_level
             } else {
-                queryString += 'available=' + available
+                queryString += 'restock_level=' + available
+            }
+        }
+        if (condition) {
+            if (queryString.length > 0) {
+                queryString += '&condition=' + condition
+            } else {
+                queryString += 'condition=' + condition
+            }
+        }
+        if (restocking_available) {
+            if (queryString.length > 0) {
+                queryString += '&restocking_available=' + restocking_available
+            } else {
+                queryString += 'restocking_available=' + restocking_available
             }
         }
 

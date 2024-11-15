@@ -181,6 +181,7 @@ def list_inventories():
     name = request.args.get("name")
     restock_level = request.args.get("restock_level")
     condition = request.args.get("condition")
+    restocking_available = request.args.get("restocking_available")
 
     if quantity:
         app.logger.info("Find by quantity: %s", quantity)

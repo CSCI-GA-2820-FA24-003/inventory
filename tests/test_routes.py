@@ -241,6 +241,25 @@ class TestYourResourceService(TestCase):
         for inventory in data:
             self.assertEqual(inventory["condition"], test_condition.name)
 
+    def test_query_by_restocking_available(self):
+        """It should Query Inventory by Condition"""
+        inventories = self._create_inventories(10)
+        test_restocking_available = inventories[0].restocking_available
+        restocking_available_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restocking_available == test_restocking_available
+        ]
+        response = self.client.get(
+            BASE_URL, query_string=f"restocking_available={test_restocking_available}"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), len(restocking_available_inventories))
+        # check the data just to be sure
+        for inventory in data:
+            self.assertEqual(inventory["restocking_available"], test_restocking_available)
+
     def test_update_non_existing_inventory(self):
         """It test how the system handle a bad update request"""
         test_inventory = InventoryFactory()

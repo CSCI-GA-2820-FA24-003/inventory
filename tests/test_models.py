@@ -164,6 +164,28 @@ class TestModelQueries(TestInventoryBase):
         for inventory in found:
             self.assertEqual(inventory.condition, condition)
 
+    def test_find_by_restocking_available(self):
+        """It should Find a Inventory by restocking_available"""
+        inventories = InventoryFactory.create_batch(10)
+        for inventory in inventories:
+            inventory.create()
+        restocking_available = inventories[0].restocking_available
+        count = len([inventory for inventory in inventories if inventory.restocking_available == restocking_available])
+        found = Inventory.find_by_restocking_available(restocking_available)
+        self.assertEqual(found.count(), count)
+        for inventory in found:
+            self.assertEqual(inventory.restocking_available, restocking_available)
+
+    def test_find_by_restocking_available_type_mismatch(self):
+        """It should Find a Inventory by restocking_available"""
+        inventories = InventoryFactory.create_batch(1)
+        for inventory in inventories:
+            inventory.create()
+        try:
+            Inventory.find_by_restocking_available(10)
+        except TypeError as e:
+            self.assertEqual(str(e), "Invalid restocking_available, must be type bool")
+
     def test_update_no_id(self):
         """It should not Update a Inventory with no id"""
         inventory = InventoryFactory()

@@ -195,3 +195,19 @@ class Inventory(db.Model):
             raise TypeError("Invalid condition, must be type Condition")
         logger.info("Processing condition query for %s ...", condition.name)
         return cls.query.filter(cls.condition == condition)
+
+    @classmethod
+    def find_by_restocking_available(cls, restocking_available: bool) -> list:
+        """Returns all Inventories by their Condition
+
+        :param restocking_available: false for the item that is restocking, true for the item that is not restocking
+        :type restocking_available: bool
+
+        :return: a collection of inventories of that restocking_available
+        :rtype: list
+
+        """
+        if not isinstance(restocking_available, bool):
+            raise TypeError("Invalid restocking_available, must be type bool")
+        logger.info("Processing restocking_available query for %s ...", restocking_available)
+        return cls.query.filter(cls.restocking_available == restocking_available)

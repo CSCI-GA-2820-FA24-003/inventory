@@ -15,7 +15,7 @@ $(function () {
         } else if(res.condition == "OPEN_BOX") {
             $("#inventory_condition").val("OPEN_BOX");
         } else if(res.condition == "USED") {
-            $("#inventory_condition").val("OPEN_BOX");
+            $("#inventory_condition").val("USED");
         }
         if (res.restocking_available == true) {
             $("#inventory_restocking_available").val("true");
@@ -275,6 +275,62 @@ $(function () {
 
         ajax.fail(function(res){
             flash_message(res.responseJSON.message)
+        });
+
+    });
+
+    // ****************************************
+    // Start Restocking a Inventory
+    // ****************************************
+
+    $("#start_restocking-btn").click(function () {
+
+        let inventory_id = $("#inventory_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/inventories/${inventory_id}/start_restock`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            //alert(res.toSource())
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            clear_form_data()
+            flash_message("http status:"+res.status)
+        });
+
+    });
+
+    $("#stop_restocking-btn").click(function () {
+
+        let inventory_id = $("#inventory_id").val();
+
+        $("#flash_message").empty();
+
+        let ajax = $.ajax({
+            type: "PUT",
+            url: `/inventories/${inventory_id}/stop_restock`,
+            contentType: "application/json",
+            data: ''
+        })
+
+        ajax.done(function(res){
+            //alert(res.toSource())
+            update_form_data(res)
+            flash_message("Success")
+        });
+
+        ajax.fail(function(res){
+            clear_form_data()
+            flash_message("http status:"+res.status)
         });
 
     });

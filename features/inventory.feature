@@ -169,3 +169,57 @@ Scenario: Search for restocking available
     And I should see "Orange" in the results
     And I should see "Pencil" in the results
     And I should see "Lighter" in the results
+
+Scenario: Start Restocking
+    When I visit the "Home Page"
+    And I set the "Name" to "Juice"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Juice" in the "Name" field
+    And I should see "123" in the "Quantity" field
+    And I should see "10" in the "Restock Level" field
+    And I should see "New" in the "Condition" dropdown
+    And I should see "True" in the "Restocking Available" dropdown
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Start Restocking" button
+    Then I should see the message "Success"
+    When I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "Juice" in the "Name" field
+    And I should see "123" in the "Quantity" field
+    And I should see "10" in the "Restock Level" field
+    And I should see "New" in the "Condition" dropdown
+    And I should see "False" in the "Restocking Available" dropdown
+    When I press the "Start Restocking" button
+    Then I should see the message "409"
+
+Scenario: Stop Restocking
+    When I visit the "Home Page"
+    And I set the "Name" to "Lighter"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Lighter" in the "Name" field
+    And I should see "97645" in the "Quantity" field
+    And I should see "10000" in the "Restock Level" field
+    And I should see "Used" in the "Condition" dropdown
+    And I should see "False" in the "Restocking Available" dropdown
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Stop Restocking" button
+    Then I should see the message "Success"
+    When I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see the message "Success"
+    And I should see "Lighter" in the "Name" field
+    And I should see "97645" in the "Quantity" field
+    And I should see "10000" in the "Restock Level" field
+    And I should see "Used" in the "Condition" dropdown
+    And I should see "True" in the "Restocking Available" dropdown
+    When I press the "Stop Restocking" button
+    Then I should see the message "409"

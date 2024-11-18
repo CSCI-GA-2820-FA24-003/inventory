@@ -303,6 +303,39 @@ def restock_inventories(inventory_id):
 
 
 ######################################################################
+# Finish restocking process for an inventory
+######################################################################
+@app.route("/inventories/<int:inventory_id>/stop_restock", methods=["PUT"])
+def stop_restock_inventories(inventory_id):
+    """After restocking an inventory, the inventory becomes available"""
+    app.logger.info("Request to finish restocking an inventory with id: %d", inventory_id)
+
+    # Attempt to find the Inventory and abort if not found
+    inventory = Inventory.find(inventory_id)
+    if not inventory:
+        abort(
+            status.HTTP_404_NOT_FOUND,
+            f"Inventory with id '{inventory_id}' was not found.",
+        )
+
+    # you can only finish restocking inventory that are not available
+    if inventory.restocking_available:
+        abort(
+            status.HTTP_409_CONFLICT,
+            f"Inventory with id '{inventory_id}' is available.",
+        )
+
+    # At this point you would execute code to finish restocking the inventory
+    # For the moment, we will just set them to unavailable
+
+    inventory.restocking_available = True
+    inventory.update()
+
+    app.logger.info("Inventory with ID: %d has been finished restocking.", inventory_id)
+    return inventory.serialize(), status.HTTP_200_OK
+
+
+######################################################################
 # TEST SERVER INTERNAL ERROR
 ######################################################################
 @app.route("/error_test", methods=["GET"])

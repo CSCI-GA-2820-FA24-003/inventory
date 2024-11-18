@@ -84,3 +84,23 @@ Scenario: Update a Inventory
     Then I should see the message "Success"
     And I should see "Watermelon" in the results
     And I should not see "Juice" in the results
+
+Scenario: Delete a Inventory 
+    When I visit the "Home Page"
+    And I set the "Name" to "Juice"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Juice" in the "Name" field
+    And I should see "123" in the "Quantity" field
+    And I should see "10" in the "Restock Level" field
+    And I should see "New" in the "Condition" dropdown
+    And I should see "True" in the "Restocking Available" dropdown
+    When I copy the "Id" field
+    And I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Delete" button
+    Then I should see the message "Inventory has been Deleted!"
+    When I press the "Clear" button
+    And I paste the "Id" field
+    And I press the "Retrieve" button
+    Then I should see the message "404 Not Found"

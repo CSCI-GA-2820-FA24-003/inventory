@@ -215,7 +215,7 @@ $(function () {
             if (queryString.length > 0) {
                 queryString += '&restock_level=' + restock_level
             } else {
-                queryString += 'restock_level=' + available
+                queryString += 'restock_level=' + restock_level
             }
         }
         if (condition) {

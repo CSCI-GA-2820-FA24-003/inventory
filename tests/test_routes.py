@@ -334,9 +334,43 @@ class TestYourResourceService(TestCase):
         response = self.client.put(f"{BASE_URL}/{inventory.id}/start_restock")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
+    def test_stop_restock_an_inventory(self):
+        """It should start restock for an inventory"""
+        inventories = self._create_inventories(10)
+        unavailable_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restocking_available is False
+        ]
+        inventory = unavailable_inventories[0]
+        response = self.client.put(f"{BASE_URL}/{inventory.id}/stop_restock")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get(f"{BASE_URL}/{inventory.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        logging.debug("Response data: %s", data)
+        self.assertEqual(data["restocking_available"], True)
+
+    def test_stop_restock_not_available(self):
+        """It should not stop restock a Inventory that is available"""
+        inventories = self._create_inventories(10)
+        available_inventories = [
+            inventory
+            for inventory in inventories
+            if inventory.restocking_available is True
+        ]
+        inventory = available_inventories[0]
+        response = self.client.put(f"{BASE_URL}/{inventory.id}/stop_restock")
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
     def test_start_restock_not_found(self):
         """It should not start restock a Inventory that is not existing"""
         response = self.client.put(f"{BASE_URL}/0/start_restock")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_stop_restock_not_found(self):
+        """It should not stop restock a Inventory that is not existing"""
+        response = self.client.put(f"{BASE_URL}/0/stop_restock")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     ############################################################

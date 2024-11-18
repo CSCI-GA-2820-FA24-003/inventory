@@ -301,6 +301,7 @@ def restock_inventories(inventory_id):
     app.logger.info("Inventory with ID: %d has been started restocking.", inventory_id)
     return inventory.serialize(), status.HTTP_200_OK
 
+
 ######################################################################
 # Finish restocking process for an inventory
 ######################################################################
@@ -332,6 +333,7 @@ def stop_restock_inventories(inventory_id):
 
     app.logger.info("Inventory with ID: %d has been finished restocking.", inventory_id)
     return inventory.serialize(), status.HTTP_200_OK
+
 
 ######################################################################
 # TEST SERVER INTERNAL ERROR

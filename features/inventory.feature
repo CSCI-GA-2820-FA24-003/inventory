@@ -113,3 +113,59 @@ Scenario: List Inventory
     And I should see "Orange" in the results
     And I should see "Pencil" in the results
     And I should not see "Lighter" in the results
+
+Scenario: Search for name
+    When I visit the "Home Page"
+    And I set the "Name" to "Juice"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "123" in the results
+    And I should see "Juice" in the results
+    And I should not see "Orange" in the results
+    And I should not see "Pencil" in the results
+    And I should not see "Lighter" in the results
+
+Scenario: Search for quantity
+    When I visit the "Home Page"
+    And I set the "Quantity" to "123"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "123" in the results
+    And I should see "Juice" in the results
+    And I should not see "Orange" in the results
+    And I should not see "Pencil" in the results
+    And I should not see "Lighter" in the results
+
+Scenario: Search for restock level
+    When I visit the "Home Page"
+    And I set the "Restock Level" to "10"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "10" in the results
+    And I should see "Juice" in the results
+    And I should not see "Orange" in the results
+    And I should not see "Pencil" in the results
+    And I should not see "Lighter" in the results
+
+Scenario: Search for condition
+    When I visit the "Home Page"
+    And I select "New" in the "Condition" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "NEW" in the results
+    And I should see "Juice" in the results
+    And I should not see "Orange" in the results
+    And I should not see "Pencil" in the results
+    And I should not see "Lighter" in the results
+
+Scenario: Search for restocking available
+    When I visit the "Home Page"
+    And I select "False" in the "Restocking Available" dropdown
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "true" in the results
+    And I should see "false" in the results
+    And I should see "Juice" in the results
+    And I should see "Orange" in the results
+    And I should see "Pencil" in the results
+    And I should see "Lighter" in the results

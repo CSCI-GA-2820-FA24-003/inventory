@@ -52,9 +52,9 @@ def step_impl(context):
         payload = {
             "name": row['name'],
             "quantity": row['quantity'],
-            "restock_level": row['restock_level'],
+            "restock_level": row['restock level'],
             "condition": row['condition'],
-            "restocking_available": row['restocking_available'],
+            "restocking_available": row['restocking available'] in ["True", "true", "1"],
         }
         context.resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
         expect(context.resp.status_code).equal_to(HTTP_201_CREATED)

@@ -9,7 +9,7 @@ Background:
         | Juice      | 123      | 10            | NEW        | True                   |
         | Orange     | 444      | 90            | OPEN_BOX   | True                   |
         | Pencil     | 6666     | 30            | USED       | True                   |
-        | Lighter    | 97645    | 10000         | USED       | True                   |
+        | Lighter    | 97645    | 10000         | USED       | False                  |
 
 Scenario: The server is running
     When I visit the "Home Page"
@@ -104,3 +104,12 @@ Scenario: Delete a Inventory
     And I paste the "Id" field
     And I press the "Retrieve" button
     Then I should see the message "404 Not Found"
+
+Scenario: List Inventory
+    When I visit the "Home Page"
+    And I press the "Search" button
+    Then I should see the message "Success"
+    And I should see "Juice" in the results
+    And I should see "Orange" in the results
+    And I should see "Pencil" in the results
+    And I should not see "Lighter" in the results

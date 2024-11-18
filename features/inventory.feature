@@ -158,7 +158,7 @@ Scenario: Search for condition
     And I should not see "Pencil" in the results
     And I should not see "Lighter" in the results
 
-Scenario: Search for restocking not available
+Scenario: Search for restocking available
     When I visit the "Home Page"
     And I select "False" in the "Restocking Available" dropdown
     And I press the "Search" button

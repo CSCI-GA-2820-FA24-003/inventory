@@ -257,7 +257,7 @@ $(function () {
             let firstInventory = "";
             for(let i = 0; i < res.length; i++) {
                 let inventory = res[i];
-                table +=  `<tr id="row_${i}"><td>${inventory.id}</td><td>${inventory.name}</td><td>${inventory.category}</td><td>${inventory.available}</td><td>${inventory.gender}</td><td>${inventory.birthday}</td></tr>`;
+                table +=  `<tr id="row_${i}"><td>${inventory.id}</td><td>${inventory.name}</td><td>${inventory.quantity}</td><td>${inventory.restock_level}</td><td>${inventory.condition}</td><td>${inventory.restocking_available}</td></tr>`;
                 if (i == 0) {
                     firstInventory = inventory;
                 }

@@ -32,7 +32,7 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql+psycopg://postgres:postgres@localhost:5432/testdb"
 )
 
-BASE_URL = "/inventories"
+BASE_URL = "/api/inventories"
 
 
 ######################################################################
@@ -194,7 +194,7 @@ class TestYourResourceService(TestCase):
         new_inventory["quantity"] = new_inventory["quantity"] + 100
         temp = new_inventory["quantity"]
         response = self.client.put(
-            f"{BASE_URL}/{new_inventory['id']}", json=new_inventory
+            f"{BASE_URL}/{new_inventory['_id']}", json=new_inventory
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_inventory = response.get_json()
@@ -242,7 +242,7 @@ class TestYourResourceService(TestCase):
             self.assertEqual(inventory["condition"], test_condition.name)
 
     def test_query_by_restocking_available(self):
-        """It should Query Inventory by Condition"""
+        """It should Query Inventory by Restocking Available"""
         inventories = self._create_inventories(10)
         test_restocking_available = inventories[0].restocking_available
         restocking_available_inventories = [
@@ -258,7 +258,9 @@ class TestYourResourceService(TestCase):
         self.assertEqual(len(data), len(restocking_available_inventories))
         # check the data just to be sure
         for inventory in data:
-            self.assertEqual(inventory["restocking_available"], test_restocking_available)
+            self.assertEqual(
+                inventory["restocking_available"], test_restocking_available
+            )
 
     def test_update_non_existing_inventory(self):
         """It test how the system handle a bad update request"""
@@ -330,7 +332,11 @@ class TestYourResourceService(TestCase):
             for inventory in inventories
             if inventory.restocking_available is False
         ]
-        inventory = unavailable_inventories[0]
+        if unavailable_inventories:
+            inventory = unavailable_inventories[0]
+        else:
+            inventory = inventories[0]
+            inventory.restocking_available = False
         response = self.client.put(f"{BASE_URL}/{inventory.id}/start_restock")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
 
@@ -381,14 +387,17 @@ class TestYourResourceService(TestCase):
         inventories = []
         for _ in range(count):
             test_inventory = InventoryFactory()
-            response = self.client.post(BASE_URL, json=test_inventory.serialize())
+            response = self.client.post(
+                BASE_URL,
+                json=test_inventory.serialize(),
+            )
             self.assertEqual(
                 response.status_code,
                 status.HTTP_201_CREATED,
                 "Could not create test inventory",
             )
             new_inventory = response.get_json()
-            test_inventory.id = new_inventory["id"]
+            test_inventory.id = new_inventory["_id"]
             inventories.append(test_inventory)
         return inventories
 
@@ -407,7 +416,7 @@ class TestSadPaths(TestCase):
 
     def test_internal_error(self):
         """It test that there is something wrong on server side"""
-        response = self.client.get("/error_test")
+        response = self.client.get("api/error_test")
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     ######################################################################

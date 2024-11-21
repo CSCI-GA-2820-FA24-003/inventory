@@ -21,9 +21,9 @@ class DataValidationError(Exception):
 class Condition(Enum):
     """Enumeration of valid inventory item conditions"""
 
-    NEW = 0
-    OPEN_BOX = 1
-    USED = 2
+    NEW = "NEW"
+    OPEN_BOX = "OPEN_BOX"
+    USED = "USED"
 
 
 class Inventory(db.Model):
@@ -87,7 +87,7 @@ class Inventory(db.Model):
 
     def serialize(self):
         """Serializes a Inventory into a dictionary"""
-        return {
+        inventory = {
             "id": self.id,
             "name": self.name,
             "quantity": self.quantity,
@@ -95,6 +95,9 @@ class Inventory(db.Model):
             "condition": self.condition.name,
             "restocking_available": self.restocking_available,
         }
+        if self.id:
+            inventory["_id"] = self.id
+        return inventory
 
     def deserialize(self, data):
         """
@@ -122,6 +125,9 @@ class Inventory(db.Model):
                 "Invalid Inventory: body of request contained bad or no data "
                 + str(error)
             ) from error
+
+        if not self.id and "_id" in data:
+            self.id = data["_id"]
         return self
 
     ##################################################
@@ -209,5 +215,7 @@ class Inventory(db.Model):
         """
         if not isinstance(restocking_available, bool):
             raise TypeError("Invalid restocking_available, must be type bool")
-        logger.info("Processing restocking_available query for %s ...", restocking_available)
+        logger.info(
+            "Processing restocking_available query for %s ...", restocking_available
+        )
         return cls.query.filter(cls.restocking_available == restocking_available)

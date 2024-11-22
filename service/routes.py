@@ -33,7 +33,7 @@ PUT /inventories/{inventory_id}/start_restock - Starts the restocking process fo
 PUT /inventories/{inventory_id}/stop_restock - Stops the restocking process for the Inventory
 DELETE /inventories/{inventory_id} - Deletes an Inventory record with the given ID
 """
-
+# pylint: disable=cyclic-import
 from flask import jsonify, abort
 from flask import current_app as app  # Import Flask application
 from flask_restx import Resource, fields, reqparse

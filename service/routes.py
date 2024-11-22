@@ -84,7 +84,7 @@ inventory_model = api.inherit(
     "InventoryModel",
     create_model,
     {
-        "_id": fields.String(
+        "id": fields.String(
             readOnly=True,
             description="The unique id assigned internally by the service",
         )

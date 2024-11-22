@@ -194,7 +194,7 @@ class TestYourResourceService(TestCase):
         new_inventory["quantity"] = new_inventory["quantity"] + 100
         temp = new_inventory["quantity"]
         response = self.client.put(
-            f"{BASE_URL}/{new_inventory['_id']}", json=new_inventory
+            f"{BASE_URL}/{new_inventory['id']}", json=new_inventory
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         updated_inventory = response.get_json()
@@ -397,7 +397,7 @@ class TestYourResourceService(TestCase):
                 "Could not create test inventory",
             )
             new_inventory = response.get_json()
-            test_inventory.id = new_inventory["_id"]
+            test_inventory.id = new_inventory["id"]
             inventories.append(test_inventory)
         return inventories
 

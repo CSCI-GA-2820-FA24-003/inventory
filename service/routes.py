@@ -196,7 +196,7 @@ class InventoryCollection(Resource):
     def post(self):
         """
         Creates an Inventory
-        This endpoint will create a Pet based the data in the body that is posted
+        This endpoint will create an Inventory based the data in the body that is posted
         """
         app.logger.info("Request to Create an Inventory")
         inventory = Inventory()
@@ -266,12 +266,12 @@ class InventoryResource(Resource):
 
         This endpoint will update a Inventory based the body that is posted
         """
-        app.logger.info("Request to Update a pet with id [%s]", inventory_id)
+        app.logger.info("Request to Update an inventory with id [%s]", inventory_id)
         inventory = Inventory.find(inventory_id)
         if not inventory:
             abort(
                 status.HTTP_404_NOT_FOUND,
-                f"Inventory with id '{inventory_id}' was not found.",
+                f"Inventory with id '{inventory_id}' not found.",
             )
         app.logger.debug("Payload = %s", api.payload)
         data = api.payload

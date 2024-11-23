@@ -95,8 +95,6 @@ class Inventory(db.Model):
             "condition": self.condition.name,
             "restocking_available": self.restocking_available,
         }
-        if self.id:
-            inventory["_id"] = self.id
         return inventory
 
     def deserialize(self, data):
@@ -125,9 +123,6 @@ class Inventory(db.Model):
                 "Invalid Inventory: body of request contained bad or no data "
                 + str(error)
             ) from error
-
-        if not self.id and "_id" in data:
-            self.id = data["_id"]
         return self
 
     ##################################################

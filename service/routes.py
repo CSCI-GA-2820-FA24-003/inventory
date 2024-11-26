@@ -36,10 +36,23 @@ DELETE /inventories/{inventory_id} - Deletes an Inventory record with the given 
 # pylint: disable=cyclic-import
 from flask import jsonify, abort
 from flask import current_app as app  # Import Flask application
-from flask_restx import Resource, fields, reqparse
+from flask_restx import Resource, fields, reqparse, Api
 from service.models import Inventory, Condition
 from service.common import status  # HTTP Status Codes
-from . import api
+
+######################################################################
+# Configure Swagger before initializing it
+######################################################################
+api = Api(
+    app,
+    version="1.0.0",
+    title="Inventory REST API Service",
+    description="This is an Inventory server.",
+    default="inventory",
+    default_label="Inventory operations",
+    doc="/apidocs",  # default also could use doc='/apidocs/'
+    prefix="/api",
+)
 
 
 ######################################################################

@@ -19,7 +19,8 @@ Module: error_handlers
 from flask import current_app as app  # Import Flask application
 from service.routes import api
 from service.models import DataValidationError
-from . import status
+from service.common import status
+from werkzeug.exceptions import NotFound
 
 
 ######################################################################
@@ -35,3 +36,15 @@ def request_validation_error(error):
         "error": "Bad Request",
         "message": message,
     }, status.HTTP_400_BAD_REQUEST
+
+
+@app.errorhandler(NotFound)
+def not_found(error):
+    """Handles resources not found with 404_NOT_FOUND"""
+    message = str(error)
+    app.logger.warning(message)
+    return {
+        "status_code": status.HTTP_404_NOT_FOUND,
+        "error": "URL Not Found",
+        "message": message,
+    }, status.HTTP_404_NOT_FOUND

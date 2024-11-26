@@ -1,0 +1,161 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  creationTimestamp: '2024-11-26T22:45:46Z'
+  generation: 8
+  managedFields:
+    - apiVersion: tekton.dev/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          .: {}
+          'f:finally': {}
+          'f:params': {}
+          'f:tasks': {}
+          'f:workspaces': {}
+      manager: Mozilla
+      operation: Update
+      time: '2024-11-26T23:27:24Z'
+  name: cd-pipeline
+  namespace: egnechng-dev
+  resourceVersion: '2765628166'
+  uid: 8595f938-bc72-4b83-ab14-aea4db7fd046
+spec:
+  params:
+    - description: ' The URL to the git repo'
+      name: GIT_REPO
+      type: string
+    - default: master
+      description: The reference (branch or ref)
+      name: GIT_REF
+      type: string
+    - default: inventory
+      description: Name of the application
+      name: APP_NAME
+      type: string
+    - default: 'image-registry.openshift-image-registry.svc:5000/$ (context.pipelineRun.namespace)/$(params.APP NAME):latest'
+      description: The name of the image to build
+      name: IMAGE_NAME
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: 'https://github.com/CSCI-GA-2820-FA24-003/inventory'
+        - name: revision
+          value: ''
+        - name: refspec
+          value: ''
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: subdirectory
+          value: ''
+        - name: sparseCheckoutDirectories
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: httpProxy
+          value: ''
+        - name: httpsProxy
+          value: ''
+        - name: noProxy
+          value: ''
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:dd5c8d08d52e304a542921634ebe6b5ff3d63c5f68f6d644e88417859b173ec8'
+        - name: userHome
+          value: /home/git
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
+    - name: pylint
+      params:
+        - name: image
+          value: 'docker.io/python:3.11-slim'
+        - name: path
+          value: .
+        - name: args
+          value: []
+        - name: requirements-file
+          value: requirements.txt
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: pylint
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: testing
+      params:
+        - name: pytest-args
+          value: []
+        - name: secret-name
+          value: postgres-creds
+        - name: secret-key
+          value: database_uri
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: Task
+        name: pytest-env
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.IMAGE_NAME)
+        - name: BUILDER_IMAGE
+          value: 'registry.redhat.io/rhel8/buildah@sha256:5c7cd7c9a3d49e8905fc98693f6da605aeafae36bde5622dc78e12f31db3cd59'
+        - name: STORAGE_DRIVER
+          value: vfs
+        - name: DOCKERFILE
+          value: ./Dockerfile
+        - name: CONTEXT
+          value: .
+        - name: TLSVERIFY
+          value: 'true'
+        - name: FORMAT
+          value: oci
+        - name: BUILD_EXTRA_ARGS
+          value: ''
+        - name: PUSH_EXTRA_ARGS
+          value: ''
+        - name: SKIP_PUSH
+          value: 'false'
+      runAfter:
+        - pylint
+        - testing
+      taskRef:
+        kind: ClusterTask
+        name: buildah
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: deploy-image
+      params:
+        - name: image-name
+          value: $(params.IMAGE_NAME)
+        - name: manifest-dir
+          value: k8s
+      runAfter:
+        - buildah
+      taskRef:
+        kind: Task
+        name: deploy-image
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+  workspaces:
+    - name: pipeline-workspace

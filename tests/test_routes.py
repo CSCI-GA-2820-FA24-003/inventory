@@ -419,6 +419,18 @@ class TestSadPaths(TestCase):
         response = self.client.get("api/error_test")
         self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    def test_not_found_error_handler(self):
+        """It should test the not_found error handler"""
+        # Make request to non-existent endpoint
+        response = self.client.get("/non_existent_endpoint")
+
+        # Assert the response
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        data = response.get_json()
+        self.assertEqual(data["status_code"], status.HTTP_404_NOT_FOUND)
+        self.assertEqual(data["error"], "URL Not Found")
+        self.assertIn("message", data)
+
     ######################################################################
     #  T E S T   M O C K S
     ######################################################################

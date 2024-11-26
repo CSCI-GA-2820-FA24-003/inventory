@@ -19,12 +19,112 @@ Inventory Service
 
 This service implements a REST API that allows you to Create, Read, Update
 and Delete Inventory
-"""
 
-from flask import jsonify, request, url_for, abort
+Paths:
+------
+GET / - Displays a UI for Selenium testing
+GET /inventories - Returns a list of all Inventories
+GET /inventories/{inventory_id} - Returns the Inventory with the given ID
+GET /health - Performs a health check to ensure the server is running properly
+GET /error_test - Triggers a server internal error for testing purposes
+POST /inventories - Creates a new Inventory record in the database
+PUT /inventories/{inventory_id} - Updates an Inventory record with the given ID
+PUT /inventories/{inventory_id}/start_restock - Starts the restocking process for the Inventory
+PUT /inventories/{inventory_id}/stop_restock - Stops the restocking process for the Inventory
+DELETE /inventories/{inventory_id} - Deletes an Inventory record with the given ID
+"""
+# pylint: disable=cyclic-import
+from flask import jsonify, abort
 from flask import current_app as app  # Import Flask application
+from flask_restx import Resource, fields, reqparse
 from service.models import Inventory, Condition
 from service.common import status  # HTTP Status Codes
+from . import api
+
+
+######################################################################
+# GET INDEX
+######################################################################
+@app.route("/")
+def index():
+    """Root URL response"""
+    return app.send_static_file("index.html")
+
+
+# Define model so that docs reflect what can be passed in
+create_model = api.model(
+    "Inventory",
+    {
+        "name": fields.String(
+            required=False,
+            description="The name of the Inventory item",
+        ),
+        "quantity": fields.Integer(
+            required=True,
+            description="The quantity of the Inventory item",
+        ),
+        "restock_level": fields.Integer(
+            required=True,
+            description="The restock level of the Inventory item",
+        ),
+        # pylint: disable=protected-access
+        "condition": fields.String(
+            required=True,
+            description="The condition of the Inventory item (New, Open Box, Used)",
+            enum=Condition._member_names_,
+        ),
+        "restocking_available": fields.Boolean(
+            required=True,
+            description="The availability of the Inventory item",
+        ),
+    },
+)
+
+inventory_model = api.inherit(
+    "InventoryModel",
+    create_model,
+    {
+        "id": fields.String(
+            readOnly=True,
+            description="The unique id assigned internally by the service",
+        )
+    },
+)
+
+# query string argumnets
+inventory_args = reqparse.RequestParser()
+inventory_args.add_argument(
+    "name", type=str, location="args", required=False, help="List inventories by name"
+)
+inventory_args.add_argument(
+    "quantity",
+    type=int,
+    location="args",
+    required=False,
+    help="List inventories by quantity",
+)
+inventory_args.add_argument(
+    "restock_level",
+    type=int,
+    location="args",
+    required=False,
+    help="List inventories by restock level",
+)
+inventory_args.add_argument(
+    "condition",
+    type=str,
+    location="args",
+    required=False,
+    choices=Condition._member_names_,
+    help="List inventories by condition",
+)
+inventory_args.add_argument(
+    "restocking_available",
+    type=str,
+    location="args",
+    required=False,
+    help="List inventories by restocking availability",
+)
 
 
 ######################################################################
@@ -37,315 +137,284 @@ def health_check():
 
 
 ######################################################################
-# GET INDEX
+#  PATH: /inventories
 ######################################################################
-@app.route("/")
-def index():
-    """Root URL response"""
-    return app.send_static_file("index.html")
+@api.route("/inventories")
+class InventoryCollection(Resource):
+    """Handles all interactions with collections of Inventories"""
 
+    # ------------------------------------------------------------------
+    # LIST ALL INVENTORIES
+    # ------------------------------------------------------------------
+    @api.doc("list_inventories")
+    @api.expect(inventory_args, validate=True)
+    @api.marshal_list_with(inventory_model)
+    def get(self):
+        """Returns all of the Inventories"""
+        app.logger.info("Request to list Inventories...")
+        inventories = []
+        args = inventory_args.parse_args()
+        if args["name"]:
+            app.logger.info("Filtering by name: %s", args["name"])
+            inventories = Inventory.find_by_name(args["name"])
+        elif args["quantity"]:
+            app.logger.info("Filtering by quantity: %s", args["quantity"])
+            quantity = int(args["quantity"])
+            inventories = Inventory.find_by_quantity(quantity)
+        elif args["restock_level"]:
+            app.logger.info("Filtering by restock level: %s", args["restock_level"])
+            restock_level = int(args["restock_level"])
+            inventories = Inventory.find_by_restock_level(restock_level)
+        elif args["condition"]:
+            app.logger.info("Filtering by condition: %s", args["condition"])
+            condition_enum = Condition(args["condition"].upper())
+            inventories = Inventory.find_by_condition(condition_enum)
+        elif args["restocking_available"]:
+            app.logger.info(
+                "Filtering by restocking availability: %s", args["restocking_available"]
+            )
+            restocking_available = args["restocking_available"].lower() in [
+                "true",
+                "yes",
+                "1",
+            ]
+            inventories = Inventory.find_by_restocking_available(restocking_available)
+        else:
+            app.logger.info("Finding all inventories")
+            inventories = Inventory.all()
 
-######################################################################
-# GET INDEX
-######################################################################
-# @app.route("/")
-# def index():
-#     """Root URL response"""
-#     app.logger.info("Request for Root URL")
-#     return (
-#         jsonify(
-#             name="Inventory REST API Service",
-#             version="1.0",
-#             paths={
-#                 "create_inventory": {
-#                     "method": "POST",
-#                     "url": url_for("create_inventory", _external=True),
-#                 },
-#                 "get_inventories": {
-#                     "method": "GET",
-#                     "url": url_for("get_inventories", inventory_id=0, _external=True),
-#                 },
-#                 "list_inventories": {
-#                     "method": "GET",
-#                     "url": url_for("list_inventories", _external=True),
-#                 },
-#                 "update_inventories": {
-#                     "method": "PUT",
-#                     "url": url_for(
-#                         "update_inventories", inventory_id=0, _external=True
-#                     ),
-#                 },
-#                 "delete_inventories": {
-#                     "method": "DELETE",
-#                     "url": url_for(
-#                         "delete_inventories", inventory_id=0, _external=True
-#                     ),
-#                 },
-#             },
-#         ),
-#         status.HTTP_200_OK,
-#     )
+        results = [inventory.serialize() for inventory in inventories]
+        return results, status.HTTP_200_OK
 
-
-######################################################################
-#  R E S T   A P I   E N D P O I N T S
-######################################################################
-
-
-######################################################################
-# CREATE AN INVENTORY
-######################################################################
-@app.route("/inventories", methods=["POST"])
-def create_inventory():
-    """
-    Create an inventory
-    This endpoint will create an Inventory based the data in the body that is posted
-    """
-    app.logger.info("Request to Create a Inventory...")
-    check_content_type("application/json")
-
-    inventory = Inventory()
-    # Get the data from the request and deserialize it
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    inventory.deserialize(data)
-
-    # Save the new Inventory to the database
-    inventory.create()
-    app.logger.info("Inventory with new id [%s] saved!", inventory.id)
-
-    # Return the location of the new Inventory
-
-    location_url = url_for("get_inventories", inventory_id=inventory.id, _external=True)
-    return (
-        jsonify(inventory.serialize()),
-        status.HTTP_201_CREATED,
-        {"Location": location_url},
-    )
-
-
-######################################################################
-# READ AN INVENTORY
-######################################################################
-@app.route("/inventories/<int:inventory_id>", methods=["GET"])
-def get_inventories(inventory_id):
-    """
-    Read an inventory
-    This endpoint will read an Inventory based on the inventory_id.
-    """
-    app.logger.info("Request to Retrieve a inventory with id [%s]", inventory_id)
-
-    # Attempt to find the inventory and abort if not found
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory item with id '{inventory_id}' was not found.",
+    # ------------------------------------------------------------------
+    # CREATE A NEW INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc("create_inventories")
+    @api.response(400, "The posted data was not valid")
+    @api.expect(create_model)
+    @api.marshal_with(inventory_model, code=201)
+    def post(self):
+        """
+        Creates an Inventory
+        This endpoint will create an Inventory based the data in the body that is posted
+        """
+        app.logger.info("Request to Create an Inventory")
+        inventory = Inventory()
+        app.logger.debug("Payload = %s", api.payload)
+        app.logger.info(api.payload)
+        inventory.deserialize(api.payload)
+        inventory.create()
+        app.logger.info("Inventory with new id [%s] created!", inventory.id)
+        app.logger.info(inventory.serialize())
+        location_url = api.url_for(
+            InventoryResource, inventory_id=inventory.id, _external=True
+        )
+        return (
+            inventory.serialize(),
+            status.HTTP_201_CREATED,
+            {"Location": location_url},
         )
 
-    app.logger.info("Returning inventory item: %s", inventory.name)
-    return jsonify(inventory.serialize()), status.HTTP_200_OK
-
-
-def check_content_type(content_type) -> None:
-    """Checks that the media type is correct"""
-    if "Content-Type" not in request.headers:
-        app.logger.error("No Content-Type specified.")
-        abort(
-            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            f"Content-Type must be {content_type}",
-        )
-
-    if request.headers["Content-Type"] == content_type:
-        return
-
-    app.logger.error("Invalid Content-Type: %s", request.headers["Content-Type"])
-    abort(
-        status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-        f"Content-Type must be {content_type}",
-    )
-
 
 ######################################################################
-# LIST ALL INVENTORIES
+#  PATH: /inventories/{id}
 ######################################################################
-@app.route("/inventories", methods=["GET"])
-def list_inventories():
-    """Returns all of the Inventories"""
-    app.logger.info("Request for inventory list")
-
-    inventories = []
-
-    # Parse any arguments from the query string
-    quantity = request.args.get("quantity")
-    name = request.args.get("name")
-    restock_level = request.args.get("restock_level")
-    condition = request.args.get("condition")
-    restocking_available = request.args.get("restocking_available")
-
-    if quantity:
-        app.logger.info("Find by quantity: %s", quantity)
-        quantity = int(quantity)
-        inventories = Inventory.find_by_quantity(quantity)
-    elif name:
-        app.logger.info("Find by name: %s", name)
-        inventories = Inventory.find_by_name(name)
-    elif restock_level:
-        app.logger.info("Find by restock_level: %s", restock_level)
-        restock_level = int(restock_level)
-        inventories = Inventory.find_by_restock_level(restock_level)
-    elif condition:
-        app.logger.info("Find by condition: %s", condition)
-        # create enum from string
-        inventories = Inventory.find_by_condition(Condition[condition.upper()])
-    elif restocking_available:
-        app.logger.info("Find by restocking_available: %s", restocking_available)
-        restocking_available = restocking_available.lower() in ["true", "yes", "1"]
-        inventories = Inventory.find_by_restocking_available(restocking_available)
-    else:
-        app.logger.info("Find all")
-        inventories = Inventory.all()
-
-    results = [inventory.serialize() for inventory in inventories]
-    app.logger.info("Returning %d inventories", len(results))
-    return jsonify(results), status.HTTP_200_OK
-
-
-######################################################################
-# UPDATE AN EXISTING INVENTORY
-######################################################################
-@app.route("/inventories/<int:inventory_id>", methods=["PUT"])
-def update_inventories(inventory_id):
+@api.route("/inventories/<inventory_id>")
+@api.param("inventory_id", "The Inventory identifier")
+class InventoryResource(Resource):
     """
-    Update a Inventory
+    InventoryResource class
 
-    This endpoint will update a Inventory based the body that is posted
+    Allows the manipulation of a single Inventory
+    GET /inventories/{inventory_id} - Returns the Inventory with given id
+    PUT /inventories/{inventory_id} - updates a Inventory record with given id
+    DELETE /inventories/{inventory_id} - deletes a Inventory record with given id
     """
-    app.logger.info("Request to Update a inventory with id [%s]", inventory_id)
-    check_content_type("application/json")
 
-    # Attempt to find the Inventory and abort if not found
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory with id '{inventory_id}' was not found.",
-        )
+    # ------------------------------------------------------------------
+    # RETRIEVE AN INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc("get_inventories")
+    @api.response(404, "Inventory not found")
+    @api.marshal_with(inventory_model)
+    def get(self, inventory_id):
+        """
+        Retrieve a single Inventory
 
-    # Update the Inventory with the new data
-    data = request.get_json()
-    app.logger.info("Processing: %s", data)
-    inventory.deserialize(data)
+        This endpoint will return an Inventory based on its id
+        """
+        app.logger.info("Request to Retrieve an inventory with id [%s]", inventory_id)
+        inventory = Inventory.find(inventory_id)
+        if not inventory:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Inventory with id '{inventory_id}' was not found.",
+            )
+        return inventory.serialize(), status.HTTP_200_OK
 
-    # Save the updates to the database
-    inventory.update()
+    # ------------------------------------------------------------------
+    # UPDATE AN EXISTING INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc("update_inventories")
+    @api.response(404, "Inventory not found")
+    @api.response(400, "The posted Inventory data was not valid")
+    @api.expect(inventory_model)
+    @api.marshal_with(inventory_model)
+    def put(self, inventory_id):
+        """
+        Update an Inventory
 
-    app.logger.info("Inventory with ID: %d updated.", inventory.id)
-    return jsonify(inventory.serialize()), status.HTTP_200_OK
+        This endpoint will update a Inventory based the body that is posted
+        """
+        app.logger.info("Request to Update an inventory with id [%s]", inventory_id)
+        inventory = Inventory.find(inventory_id)
+        if not inventory:
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Inventory with id '{inventory_id}' not found.",
+            )
+        app.logger.debug("Payload = %s", api.payload)
+        data = api.payload
+        inventory.deserialize(data)
+        inventory.id = inventory_id
+        inventory.update()
+        return inventory.serialize(), status.HTTP_200_OK
+
+    # ------------------------------------------------------------------
+    # DELETE AN INVENTORY
+    # ------------------------------------------------------------------
+    @api.doc("delete_inventories")
+    @api.response(204, "Inventory deleted")
+    def delete(self, inventory_id):
+        """
+        Delete an Inventory
+
+        This endpoint will delete an Inventory based the id specified in the path
+        """
+        app.logger.info("Request to Delete an inventory with id [%s]", inventory_id)
+        inventory = Inventory.find(inventory_id)
+        if inventory:
+            inventory.delete()
+            app.logger.info("Inventory with id [%s] was deleted", inventory_id)
+
+        return "", status.HTTP_204_NO_CONTENT
 
 
 ######################################################################
-# DELETE AN EXISTING INVENTORY
+#  PATH: /inventories/<inventory_id>/start_restock
 ######################################################################
-@app.route("/inventories/<int:inventory_id>", methods=["DELETE"])
-def delete_inventories(inventory_id):
-    """
-    Delete an inventory
+@api.route("/inventories/<int:inventory_id>/start_restock")
+@api.param("inventory_id", "The Inventory identifier")
+class InventoryStartRestock(Resource):
+    """Handles the start restocking process for a single Inventory"""
 
-    This endpoint will delete an existing inventory based its inventory_id
-    """
-    app.logger.info("Request to Delete an Inventory with id [%s]", inventory_id)
+    @api.doc("start_restock_inventories")
+    @api.response(404, "Inventory not found")
+    @api.response(409, "Inventory is not available for restocking")
+    @api.marshal_with(inventory_model, code=200)
+    def put(self, inventory_id):
+        """
+        Start Restocking an Inventory
 
-    # Find the inventory
-    inventory = Inventory.find(inventory_id)
-    # If inventory exists, delete it
-    if inventory:
-        inventory.delete()
+        This endpoint marks the inventory as being restocked, making it unavailable.
+        """
         app.logger.info(
-            "Inventory with id [%s] as been successfully deleted.", inventory_id
+            "Request to start restocking inventory with id: %d", inventory_id
         )
-    else:
-        app.logger.info("Inventory with id [%s] not found", inventory_id)
-    return "", status.HTTP_204_NO_CONTENT
+
+        # Attempt to find the Inventory and abort if not found
+        inventory = Inventory.find(inventory_id)
+        if not inventory:
+            app.logger.warning("Inventory with id '%d' not found.", inventory_id)
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Inventory with id '{inventory_id}' was not found.",
+            )
+
+        # You can only restock inventory that is available
+        if not inventory.restocking_available:
+            app.logger.warning(
+                "Inventory with id '%d' is not available for restocking.", inventory_id
+            )
+            abort(
+                status.HTTP_409_CONFLICT,
+                f"Inventory with id '{inventory_id}' is not available.",
+            )
+
+        # Execute restocking logic (currently setting to unavailable)
+        inventory.restocking_available = False
+        inventory.update()
+
+        app.logger.info("Inventory with ID: %d has started restocking.", inventory_id)
+        return inventory.serialize(), status.HTTP_200_OK
 
 
 ######################################################################
-# Start to restock an inventory
+#  PATH: /inventories/<inventory_id>/stop_restock
 ######################################################################
-@app.route("/inventories/<int:inventory_id>/start_restock", methods=["PUT"])
-def restock_inventories(inventory_id):
-    """Restocking an inventory makes it unavailable"""
-    app.logger.info("Request to restock an inventory with id: %d", inventory_id)
+@api.route("/inventories/<int:inventory_id>/stop_restock")
+@api.param("inventory_id", "The Inventory identifier")
+class InventoryStopRestock(Resource):
+    """Handles the stop restocking process for a single Inventory"""
 
-    # Attempt to find the Inventory and abort if not found
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
+    @api.doc("stop_restock_inventories")
+    @api.response(404, "Inventory not found")
+    @api.response(409, "Inventory is already available")
+    @api.marshal_with(inventory_model, code=200)
+    def put(self, inventory_id):
+        """
+        Stop Restocking an Inventory
+
+        This endpoint marks the inventory as available after restocking.
+        """
+        app.logger.info(
+            "Request to stop restocking inventory with id: %d", inventory_id
+        )
+
+        # Attempt to find the Inventory and abort if not found
+        inventory = Inventory.find(inventory_id)
+        if not inventory:
+            app.logger.warning("Inventory with id '%d' not found.", inventory_id)
+            abort(
+                status.HTTP_404_NOT_FOUND,
+                f"Inventory with id '{inventory_id}' was not found.",
+            )
+
+        # You can only stop restocking if the inventory is currently not available
+        if inventory.restocking_available:
+            app.logger.warning(
+                "Inventory with id '%d' is already available.", inventory_id
+            )
+            abort(
+                status.HTTP_409_CONFLICT,
+                f"Inventory with id '{inventory_id}' is already available.",
+            )
+
+        # Execute logic to finish restocking (currently setting to available)
+        inventory.restocking_available = True
+        inventory.update()
+
+        app.logger.info("Inventory with ID: %d has finished restocking.", inventory_id)
+        return inventory.serialize(), status.HTTP_200_OK
+
+
+######################################################################
+#  PATH: /error_test
+######################################################################
+@api.route("/error_test")
+class ErrorTest(Resource):
+    """Endpoint to test server internal errors"""
+
+    @api.doc("error_test")
+    @api.response(500, "Internal Server Error")
+    def get(self):
+        """
+        Test Server Internal Error
+
+        This endpoint will directly return a HTTP 500 error to simulate a server-side issue.
+        """
+        app.logger.info("Request to trigger an internal server error.")
         abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory with id '{inventory_id}' was not found.",
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+            "Internal Server Error",
         )
-
-    # you can only restock inventory that are available
-    if not inventory.restocking_available:
-        abort(
-            status.HTTP_409_CONFLICT,
-            f"Inventory with id '{inventory_id}' is not available.",
-        )
-
-    # At this point you would execute code to restock the inventory
-    # For the moment, we will just set them to unavailable
-
-    inventory.restocking_available = False
-    inventory.update()
-
-    app.logger.info("Inventory with ID: %d has been started restocking.", inventory_id)
-    return inventory.serialize(), status.HTTP_200_OK
-
-
-######################################################################
-# Finish restocking process for an inventory
-######################################################################
-@app.route("/inventories/<int:inventory_id>/stop_restock", methods=["PUT"])
-def stop_restock_inventories(inventory_id):
-    """After restocking an inventory, the inventory becomes available"""
-    app.logger.info("Request to finish restocking an inventory with id: %d", inventory_id)
-
-    # Attempt to find the Inventory and abort if not found
-    inventory = Inventory.find(inventory_id)
-    if not inventory:
-        abort(
-            status.HTTP_404_NOT_FOUND,
-            f"Inventory with id '{inventory_id}' was not found.",
-        )
-
-    # you can only finish restocking inventory that are not available
-    if inventory.restocking_available:
-        abort(
-            status.HTTP_409_CONFLICT,
-            f"Inventory with id '{inventory_id}' is available.",
-        )
-
-    # At this point you would execute code to finish restocking the inventory
-    # For the moment, we will just set them to unavailable
-
-    inventory.restocking_available = True
-    inventory.update()
-
-    app.logger.info("Inventory with ID: %d has been finished restocking.", inventory_id)
-    return inventory.serialize(), status.HTTP_200_OK
-
-
-######################################################################
-# TEST SERVER INTERNAL ERROR
-######################################################################
-@app.route("/error_test", methods=["GET"])
-def error_test():
-    """
-    TEST SERVER INTERNAL ERROR
-
-    This endpoint will directly return a HTTP code 500, indicating something wrong on server side.
-    """
-    abort(
-        status.HTTP_500_INTERNAL_SERVER_ERROR,
-        "Internal Server Error",
-    )

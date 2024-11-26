@@ -34,27 +34,30 @@ HTTP_204_NO_CONTENT = 204
 WAIT_TIMEOUT = 60
 
 
-@given('the following inventories')
+@given("the following inventories")
 def step_impl(context):
-    """ Delete all Inventories and load new ones """
+    """Delete all Inventories and load new ones"""
 
     # Get a list all of the inventories
-    rest_endpoint = f"{context.base_url}/inventories"
+    rest_endpoint = f"{context.base_url}/api/inventories"
     context.resp = requests.get(rest_endpoint, timeout=WAIT_TIMEOUT)
     expect(context.resp.status_code).equal_to(HTTP_200_OK)
     # and delete them one by one
     for inventory in context.resp.json():
-        context.resp = requests.delete(f"{rest_endpoint}/{inventory['id']}", timeout=WAIT_TIMEOUT)
+        context.resp = requests.delete(
+            f"{rest_endpoint}/{inventory['id']}", timeout=WAIT_TIMEOUT
+        )
         expect(context.resp.status_code).equal_to(HTTP_204_NO_CONTENT)
 
     # load the database with new inventories
     for row in context.table:
         payload = {
-            "name": row['name'],
-            "quantity": row['quantity'],
-            "restock_level": row['restock level'],
-            "condition": row['condition'],
-            "restocking_available": row['restocking available'] in ["True", "true", "1"],
+            "name": row["name"],
+            "quantity": row["quantity"],
+            "restock_level": row["restock level"],
+            "condition": row["condition"],
+            "restocking_available": row["restocking available"]
+            in ["True", "true", "1"],
         }
         context.resp = requests.post(rest_endpoint, json=payload, timeout=WAIT_TIMEOUT)
         expect(context.resp.status_code).equal_to(HTTP_201_CREATED)

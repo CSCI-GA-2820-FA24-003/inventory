@@ -17,10 +17,10 @@
 Module: error_handlers
 """
 from flask import current_app as app  # Import Flask application
+from werkzeug.exceptions import NotFound
 from service.routes import api
 from service.models import DataValidationError
 from service.common import status
-from werkzeug.exceptions import NotFound
 
 
 ######################################################################

@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   creationTimestamp: '2024-11-26T22:45:46Z'
-  generation: 8
+  generation: 11
   managedFields:
     - apiVersion: tekton.dev/v1
       fieldsType: FieldsV1
@@ -15,10 +15,10 @@ metadata:
           'f:workspaces': {}
       manager: Mozilla
       operation: Update
-      time: '2024-11-26T23:27:24Z'
+      time: '2024-11-30T20:19:59Z'
   name: cd-pipeline
   namespace: egnechng-dev
-  resourceVersion: '2765628166'
+  resourceVersion: '2780388568'
   uid: 8595f938-bc72-4b83-ab14-aea4db7fd046
 spec:
   params:
@@ -33,7 +33,7 @@ spec:
       description: Name of the application
       name: APP_NAME
       type: string
-    - default: 'image-registry.openshift-image-registry.svc:5000/$ (context.pipelineRun.namespace)/$(params.APP NAME):latest'
+    - default: 'image-registry.openshift-image-registry.svc:5000/$ (context.pipelineRun.namespace)/$(params.APP_NAME):latest'
       description: The name of the image to build
       name: IMAGE_NAME
       type: string
@@ -41,9 +41,9 @@ spec:
     - name: git-clone
       params:
         - name: url
-          value: 'https://github.com/CSCI-GA-2820-FA24-003/inventory'
+          value: $(params.GIT_REPO)
         - name: revision
-          value: ''
+          value: $(params.GIT_REF)
         - name: refspec
           value: ''
         - name: submodules
@@ -83,7 +83,7 @@ spec:
         - name: image
           value: 'docker.io/python:3.11-slim'
         - name: path
-          value: .
+          value: service
         - name: args
           value: []
         - name: requirements-file

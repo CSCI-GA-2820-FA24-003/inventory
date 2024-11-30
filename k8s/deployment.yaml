@@ -22,7 +22,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: inventory
-        image: cluster-registry:5000/inventory:latest
+        image: cluster-registry:5000/inventory:1.0
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

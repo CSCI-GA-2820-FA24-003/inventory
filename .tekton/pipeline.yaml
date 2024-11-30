@@ -1,8 +1,8 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: '2024-11-26T22:45:46Z'
-  generation: 11
+  creationTimestamp: '2024-11-30T06:54:58Z'
+  generation: 4
   managedFields:
     - apiVersion: tekton.dev/v1
       fieldsType: FieldsV1
@@ -22,7 +22,7 @@ metadata:
   uid: 8595f938-bc72-4b83-ab14-aea4db7fd046
 spec:
   params:
-    - description: ' The URL to the git repo'
+    - description: The URL to the git repo
       name: GIT_REPO
       type: string
     - default: master
@@ -33,7 +33,7 @@ spec:
       description: Name of the application
       name: APP_NAME
       type: string
-    - default: 'image-registry.openshift-image-registry.svc:5000/$ (context.pipelineRun.namespace)/$(params.APP_NAME):latest'
+    - default: 'image-registry.openshift-image-registry.svc:5000/$(context.pipelineRun.namespace)/$(params.APP_NAME):latest'
       description: The name of the image to build
       name: IMAGE_NAME
       type: string

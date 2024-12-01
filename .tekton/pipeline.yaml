@@ -15,11 +15,11 @@ metadata:
           'f:workspaces': {}
       manager: Mozilla
       operation: Update
-      time: '2024-11-30T09:19:47Z'
+      time: '2024-11-30T20:19:59Z'
   name: cd-pipeline
-  namespace: qm2104-dev
-  resourceVersion: '2778641215'
-  uid: 05d3e735-9e6e-47a3-8610-c0d36f315856
+  namespace: egnechng-dev
+  resourceVersion: '2780388568'
+  uid: 8595f938-bc72-4b83-ab14-aea4db7fd046
 spec:
   params:
     - description: The URL to the git repo

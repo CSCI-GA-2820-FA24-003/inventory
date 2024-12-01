@@ -1,8 +1,8 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: '2024-11-30T06:54:58Z'
-  generation: 4
+  creationTimestamp: '2024-12-01T02:42:20Z'
+  generation: 5
   managedFields:
     - apiVersion: tekton.dev/v1
       fieldsType: FieldsV1
@@ -15,11 +15,11 @@ metadata:
           'f:workspaces': {}
       manager: Mozilla
       operation: Update
-      time: '2024-11-30T20:19:59Z'
+      time: '2024-12-01T06:36:01Z'
   name: cd-pipeline
-  namespace: egnechng-dev
-  resourceVersion: '2780388568'
-  uid: 8595f938-bc72-4b83-ab14-aea4db7fd046
+  namespace: ctfoci-dev
+  resourceVersion: '2782037333'
+  uid: f855ae9e-69d3-42ef-99bd-b58da7b3ab82
 spec:
   params:
     - description: The URL to the git repo
@@ -154,6 +154,22 @@ spec:
       taskRef:
         kind: Task
         name: deploy-image
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+    - name: behave
+      params:
+        - name: base-url
+          value: 'https://inventory-ctfoci-dev.apps.sandbox-m4.g2pi.p1.openshiftapps.com'
+        - name: wait-seconds
+          value: '60'
+        - name: driver
+          value: chrome
+      runAfter:
+        - deploy-image
+      taskRef:
+        kind: Task
+        name: behave
       workspaces:
         - name: source
           workspace: pipeline-workspace

@@ -1,4 +1,4 @@
-# NYU FA24 DevOps Inventory 
+# NYU FA24 DevOps Inventory
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/Language-Python-blue.svg)](https://python.org/)

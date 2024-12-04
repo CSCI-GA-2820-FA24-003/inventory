@@ -281,5 +281,7 @@ spec:
         fi
         python -m pip install --user -r requirements.txt
 
+        echo "***** Wait 60 seconds for Service Available *****"
+        sleep 60
         echo "***** Running Tests *****"
         behave

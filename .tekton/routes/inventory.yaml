@@ -1,0 +1,65 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: inventory
+  namespace: ctfoci-dev
+  uid: 1785098d-4036-4530-be4e-fa1d214e8a7f
+  resourceVersion: '2792191666'
+  creationTimestamp: '2024-12-03T22:25:59Z'
+  labels:
+    app: inventory
+  annotations:
+    openshift.io/host.generated: 'true'
+  managedFields:
+    - manager: Mozilla
+      operation: Update
+      apiVersion: route.openshift.io/v1
+      time: '2024-12-03T22:25:59Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:app': {}
+        'f:spec':
+          'f:port':
+            .: {}
+            'f:targetPort': {}
+          'f:tls':
+            .: {}
+            'f:termination': {}
+          'f:to':
+            'f:kind': {}
+            'f:name': {}
+            'f:weight': {}
+          'f:wildcardPolicy': {}
+    - manager: openshift-router
+      operation: Update
+      apiVersion: route.openshift.io/v1
+      time: '2024-12-03T22:25:59Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:ingress': {}
+      subresource: status
+spec:
+  host: inventory-ctfoci-dev.apps.sandbox-m4.g2pi.p1.openshiftapps.com
+  to:
+    kind: Service
+    name: inventory
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  tls:
+    termination: edge
+  wildcardPolicy: None
+status:
+  ingress:
+    - host: inventory-ctfoci-dev.apps.sandbox-m4.g2pi.p1.openshiftapps.com
+      routerName: default
+      conditions:
+        - type: Admitted
+          status: 'True'
+          lastTransitionTime: '2024-12-03T22:25:59Z'
+      wildcardPolicy: None
+      routerCanonicalHostname: router-default.apps.sandbox-m4.g2pi.p1.openshiftapps.com

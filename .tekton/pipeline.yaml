@@ -2,7 +2,7 @@ apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   creationTimestamp: '2024-12-01T02:42:20Z'
-  generation: 5
+  generation: 8
   managedFields:
     - apiVersion: tekton.dev/v1
       fieldsType: FieldsV1
@@ -15,10 +15,10 @@ metadata:
           'f:workspaces': {}
       manager: Mozilla
       operation: Update
-      time: '2024-12-01T06:36:01Z'
+      time: '2024-12-04T21:32:42Z'
   name: cd-pipeline
   namespace: ctfoci-dev
-  resourceVersion: '2782037333'
+  resourceVersion: '2795912375'
   uid: f855ae9e-69d3-42ef-99bd-b58da7b3ab82
 spec:
   params:
@@ -38,6 +38,23 @@ spec:
       name: IMAGE_NAME
       type: string
   tasks:
+    - name: cleanup-task
+      taskSpec:
+        metadata: {}
+        spec: null
+        steps:
+          - args:
+              - |-
+                echo "Deleting completed resources..."
+                oc delete pods --field-selector=status.phase==Succeeded
+                oc delete pods --field-selector=status.phase==Failed
+            command:
+              - /bin/bash
+              - '-c'
+            computeResources: {}
+            image: 'quay.io/openshift/origin-cli:latest'
+            name: cleanup
+            workingDir: /workspace/source
     - name: git-clone
       params:
         - name: url
@@ -72,6 +89,8 @@ spec:
           value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:dd5c8d08d52e304a542921634ebe6b5ff3d63c5f68f6d644e88417859b173ec8'
         - name: userHome
           value: /home/git
+      runAfter:
+        - cleanup-task
       taskRef:
         kind: ClusterTask
         name: git-clone
@@ -173,19 +192,5 @@ spec:
       workspaces:
         - name: source
           workspace: pipeline-workspace
-    - name: cleanup-task
-      runAfter:
-        - behave
-      taskSpec:
-        steps:
-          - name: cleanup
-            image: quay.io/openshift/origin-cli:latest
-            workingDir: /workspace/source
-            command: ["/bin/bash", "-c"]
-            args:
-              - |-
-                echo "Deleting completed resources..."
-                oc delete pods --field-selector=status.phase==Succeeded
-                oc delete pods --field-selector=status.phase==Failed
   workspaces:
     - name: pipeline-workspace

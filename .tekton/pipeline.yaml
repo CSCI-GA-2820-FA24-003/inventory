@@ -179,11 +179,13 @@ spec:
       taskSpec:
         steps:
           - name: cleanup
-            image: bash
-            script: |
-              #!/bin/bash
-              echo "Deleting completed resources..."
-              oc delete pods --field-selector=status.phase==Succeeded
-              oc delete pods --field-selector=status.phase==Failed
+            image: quay.io/openshift/origin-cli:latest
+            workingDir: /workspace/source
+            command: ["/bin/bash", "-c"]
+            args:
+              - |-
+                echo "Deleting completed resources..."
+                oc delete pods --field-selector=status.phase==Succeeded
+                oc delete pods --field-selector=status.phase==Failed
   workspaces:
     - name: pipeline-workspace

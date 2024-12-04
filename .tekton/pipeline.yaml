@@ -173,5 +173,17 @@ spec:
       workspaces:
         - name: source
           workspace: pipeline-workspace
+    - name: cleanup-task
+      runAfter:
+        - behave
+      taskSpec:
+        steps:
+          - name: cleanup
+            image: bash
+            script: |
+              #!/bin/bash
+              echo "Deleting completed resources..."
+              oc delete pods --field-selector=status.phase==Succeeded
+              oc delete pods --field-selector=status.phase==Failed
   workspaces:
     - name: pipeline-workspace
